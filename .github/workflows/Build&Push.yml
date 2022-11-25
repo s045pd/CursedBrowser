@@ -31,4 +31,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: s045pd/CursedChrome:latest
+          tags: s045pd/cursed_chrome:latest
