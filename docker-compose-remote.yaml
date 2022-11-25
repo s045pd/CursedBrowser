@@ -6,6 +6,8 @@ services:
   db:
     image: postgres
     restart: always
+    volumes:
+      - cursedchrome-db:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: cursedchrome
       POSTGRES_USER: cursedchrome
@@ -13,10 +15,11 @@ services:
   cursedchrome:
     image: "s045pd/cursed_chrome:latest"
     volumes:
-      - cursedchrome:/work/cassl
+      - cursedchrome-web:/work/cassl
     depends_on:
       - db
       - redis
+    restart: always
     environment:
       DATABASE_NAME: cursedchrome
       DATABASE_USER: cursedchrome
@@ -29,4 +32,5 @@ services:
       - "4343:4343" # WebSocket server (talks with implants)
       - "8118:8118" # Web panel
 volumes:
-  cursedchrome:
+  cursedchrome-web:
+  cursedchrome-db:
