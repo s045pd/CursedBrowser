@@ -1,33 +1,17 @@
 FROM node:12.16.2-stretch
 
-RUN mkdir /work/
 WORKDIR /work/
-COPY package.json /work/
-COPY package-lock.json /work/
-RUN npm install
+COPY utils.js api-server.js server.js database.js docker-entrypoint.sh package.json package-lock.json .
+COPY anyproxy/ ./anyproxy/
+COPY gui/ ./gui/
+RUN npm config set registry https://registry.npm.taobao.org && npm install
 
-COPY ./anyproxy /work/anyproxy/
-RUN /work/anyproxy/bin/anyproxy-ca --generate
-RUN mkdir /work/ssl/
-RUN cp /root/.anyproxy/certificates/rootCA.crt /work/ssl/
-RUN cp /root/.anyproxy/certificates/rootCA.key /work/ssl/
+RUN /work/anyproxy/bin/anyproxy-ca --generate \
+	&& mkdir /work/ssl/ \
+	&& cp /root/.anyproxy/certificates/rootCA.* /work/ssl/ 
 
-# Copy over and build front-end
-COPY gui /work/gui
 WORKDIR /work/gui
-RUN npm install
-RUN npm run build
-
-WORKDIR /work/
-
-COPY utils.js /work/
-COPY api-server.js /work/
-COPY server.js /work/
-COPY database.js /work/
-COPY docker-entrypoint.sh /work/
-
-# For debugging/hot-reloading
-#RUN npm install -g nodemon
+RUN npm install && npm run build 
+RUN apt-get clean && npm cache clean -f
 
 ENTRYPOINT ["/work/docker-entrypoint.sh"]
-#ENTRYPOINT ["node", "/work/server.js"]
