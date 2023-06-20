@@ -11,11 +11,8 @@
                 <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
                 <b-collapse id="nav-collapse" is-nav>
                     <b-navbar-nav>
-                        <b-nav-item target="_blank" href="https://github.com/mandatoryprogrammer/CursedChrome">
+                        <b-nav-item target="_blank" href="https://github.com/s045pd/CursedChrome">
                             <font-awesome-icon :icon="['fab', 'github']" class="icon alt mr-1 ml-1"></font-awesome-icon> Repo
-                        </b-nav-item>
-                        <b-nav-item target="_blank" href="https://twitter.com/IAmMandatory">
-                            <font-awesome-icon :icon="['fab', 'twitter']" class="icon alt mr-1 ml-1"></font-awesome-icon> @IAmMandatory
                         </b-nav-item>
                     </b-navbar-nav>
                     <b-navbar-nav class="ml-auto">
@@ -83,6 +80,8 @@
                                         <th scope="col">Name</th>
                                         <th scope="col">HTTP Proxy Credentials</th>
                                         <th scope="col">Online?</th>
+                                        <th scope="col">Tabs</th>
+                                        <th scope="col">CurrentTab</th>
                                         <th scope="col">Options</th>
                                     </tr>
                                 </thead>
@@ -124,6 +123,10 @@
                                             <span class="offline-symbol">
                                                 <font-awesome-icon :icon="['fas', 'times-circle']" class="icon alt mr-1 ml-1" />
                                             </span>
+                                        </td>
+                                        <td></td>
+                                        <td>
+                                            {{ bot.current_tab }}
                                         </td>
                                         <td style="vertical-align: middle;">
                                             <b-button-group vertical>

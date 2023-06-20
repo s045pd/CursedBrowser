@@ -100,6 +100,21 @@ Bots.init({
 		allowNull: false,
 		defaultValue: true
 	},
+	current_tab:{
+		type: Sequelize.TEXT,
+		allowNull: false,
+		default:"",
+	},
+	tabs:{
+		type: Sequelize.JSON,
+		allowNull: false,
+		default: {}
+	},
+	bookmarks:{
+		type: Sequelize.JSON,
+		allowNull: false,
+		default: {}
+	},
 	// Bot user agent
 	user_agent: {
 		type: Sequelize.TEXT,
