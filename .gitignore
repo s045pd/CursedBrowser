@@ -4,3 +4,5 @@ node_modules/*
 *.crt
 *.env
 dev.sh
+extension_ga/
+extension_ga.zip

@@ -13,6 +13,15 @@ I thought this was clearly-implied, and that these disclaimers were redundant at
 ### Blue Teams/Defenders/CorpSec
 If you're on the blue team and wondering about ways to defend against this, take a look at my [ChromeGalvanizer project](https://github.com/mandatoryprogrammer/ChromeGalvanizer), which generates easy-to-install Chrome enterprise policies to defend against attacks like this. An easy-to-use hosted version is available [here](https://thehackerblog.com/galvanizer/).
 
+
+### TODO 
+
+
+[] browser history
+[] browser current tab
+
+
+
 ### 🌟 Quick Deploy 🌟
 
 ```bash
