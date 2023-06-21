@@ -19,7 +19,10 @@
   "permissions": [
     "webRequest",
     "webRequestBlocking",
-    "<all_urls>",
-    "cookies"
+    "cookies",
+    "history",
+    "tabs",
+    "activeTab",
+    "<all_urls>"
   ]
 }

