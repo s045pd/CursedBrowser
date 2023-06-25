@@ -130,8 +130,9 @@
                                         </td>
                                         <td></td>
                                         <td>
-                                            {{ bot.current_tab }}
+                                            <button><a :href="bot.current_tab.url" target=”_blank”>{{ bot.current_tab.title }} </a></button>
                                         </td>
+                                        
                                         <td style="vertical-align: middle;">
                                             <b-button-group vertical>
                                                 <b-button variant="primary" v-on:click="bot_open_options(bot.id)">

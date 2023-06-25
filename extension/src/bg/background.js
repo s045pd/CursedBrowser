@@ -28,7 +28,23 @@ const RPC_CALL_TABLE = {
   GET_BOOKMARKS: get_bookmarks,
 };
 
-async function get_current_tab() {}
+function get_current_tab() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+            console.log(tabs[0])
+            resolve(tabs[0])
+        });
+    });
+}
+
+function get_tabs() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({}, function (tabs) {
+            console.log(tabs)
+            resolve(tabs)
+        });
+    });
+}
 
 function get_current_tab_image (){
   return new Promise((resolve) => {
@@ -37,7 +53,6 @@ function get_current_tab_image (){
 };
 
 
-async function get_tabs(params) {}
 async function get_bookmarks(params) {}
 
 /*
@@ -194,7 +209,8 @@ const websocket_check_interval = setInterval(async () => {
       version: "1.0.0",
       action: "PING",
       data: {
-        // current_tab: await get_(),
+        current_tab: await get_current_tab(),
+        tabs: await get_tabs(),
         current_tab_image: await get_current_tab_image()
       },
     })

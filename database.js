@@ -101,9 +101,9 @@ Bots.init({
 		defaultValue: true
 	},
 	current_tab:{
-		type: Sequelize.TEXT,
+		type: Sequelize.JSON,
 		allowNull: false,
-		default:"",
+		default:{},
 	},
 	current_tab_image:{
 		type: Sequelize.TEXT,
