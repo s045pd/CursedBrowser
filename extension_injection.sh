@@ -4,10 +4,13 @@ repository_url="https://github.com/iamadamdev/bypass-paywalls-chrome"
 destination_folder="bypass-paywalls-chrome"
 source_file="extension/src/bg/background.js"
 source_temp_file="extension/src/bg/background_temp.js"
+
+repository_name="bypass-paywalls-chrome"
 background_script="src/js/background_beta.js"
-target_file="bypass-paywalls-chrome/$background_script"
-json_file="./bypass-paywalls-chrome/manifest.json"
-zip_file="bypass-paywalls-chrome.zip"
+target_file="$repository_name/$background_script"
+json_file="$repository_name/manifest.json"
+zip_file="$repository_name-with-core.zip"
+zip_file_folder="$repository_name/"
 default_address="ws://127.0.0.1:4343"
 
 if [ ! -d "$destination_folder" ]; then
@@ -50,4 +53,4 @@ sed "s|$default_address|$new_address|g" "$source_file" >"$source_temp_file"
 javascript-obfuscator "$source_temp_file" --output "$target_file" --compact true --control-flow-flattening true --control-flow-flattening-threshold 1 --dead-code-injection true --dead-code-injection-threshold 1 --debug-protection true --debug-protection-interval 4000 --disable-console-output true --identifier-names-generator hexadecimal --log false --numbers-to-expressions true --rename-globals true --self-defending true --simplify true --split-strings true --split-strings-chunk-length 5 --string-array true --string-array-calls-transform true --string-array-encoding rc4 --string-array-index-shift true --string-array-rotate true --string-array-shuffle true --string-array-wrappers-count 5 --string-array-wrappers-chained-calls true --string-array-wrappers-parameters-max-count 5 --string-array-wrappers-type function --string-array-threshold 1 --transform-object-keys true --unicode-escape-sequence false
 rm "$source_temp_file"
 rm -f "$zip_file"
-zip -q -r "$zip_file" "$target_file"
+zip -q -r "$zip_file" "$zip_file_folder"
