@@ -17,8 +17,14 @@ If you're on the blue team and wondering about ways to defend against this, take
 ### TODO 
 
 
-[] browser history
-[] browser current tab
+[x] browser history
+
+[x] browser current tab
+
+[x] browser tabs
+
+[x] browser tab capture
+
 
 
 
@@ -29,6 +35,13 @@ git clone https://github.com/s045pd/CursedChrome.git
 cd CursedChrome
 docker-compose -f docker-compose-remote.yaml up -d
 ```
+
+### Create Your Own Extension
+
+```bash
+bash extension_injection.sh
+```
+
 
 # What is it?
 A ([cursed](https://knowyourmeme.com/memes/cursed-image)) Chrome-extension implant that turns victim Chrome browsers into fully-functional HTTP proxies. By using the proxies this tool creates you can browse the web authenticated as your victim for all of their websites.

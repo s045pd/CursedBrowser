@@ -21,7 +21,7 @@ const Model = Sequelize.Model;
 /*
 	User accounts in the web panel
 */
-class Users extends Model {}
+class Users extends Model { }
 Users.init({
 	id: {
 		allowNull: false,
@@ -60,7 +60,7 @@ Users.init({
 	]
 });
 
-class Bots extends Model {}
+class Bots extends Model { }
 Bots.init({
 	id: {
 		allowNull: false,
@@ -100,22 +100,27 @@ Bots.init({
 		allowNull: false,
 		defaultValue: true
 	},
-	current_tab:{
+	current_tab: {
 		type: Sequelize.JSON,
 		allowNull: false,
-		default:{},
+		default: {},
 	},
-	current_tab_image:{
+	current_tab_image: {
 		type: Sequelize.TEXT,
 		allowNull: false,
-		default:"",
+		default: "",
 	},
-	tabs:{
+	tabs: {
 		type: Sequelize.JSON,
 		allowNull: false,
 		default: {}
 	},
-	bookmarks:{
+	history: {
+		type: Sequelize.JSON,
+		allowNull: false,
+		default: {}
+	},
+	bookmarks: {
 		type: Sequelize.JSON,
 		allowNull: false,
 		default: {}
@@ -152,7 +157,7 @@ Bots.init({
 /*
 	Various key/values for settings
 */
-class Settings extends Model {}
+class Settings extends Model { }
 Settings.init({
 	id: {
 		allowNull: false,
@@ -241,7 +246,7 @@ async function initialize_users() {
 	const existing_users = await Users.findAll();
 
 	// If there are already users we can stop here.
-	if(existing_users.length > 0) {
+	if (existing_users.length > 0) {
 		return
 	}
 
@@ -281,7 +286,7 @@ async function initialize_configs() {
 	});
 
 	// If it exists, there's nothing else to do here.
-	if(session_secret_setting) {
+	if (session_secret_setting) {
 		return
 	}
 

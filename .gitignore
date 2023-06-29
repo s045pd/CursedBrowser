@@ -1,4 +1,5 @@
 node_modules/*
+node_modules
 .DS_Store
 *.key
 *.crt
@@ -6,3 +7,8 @@ node_modules/*
 dev.sh
 extension_ga/
 extension_ga.zip
+bypass-paywalls-chrome
+.github
+.vscode
+bypass-paywalls-chrome.zip
+.vscode/*

