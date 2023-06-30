@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const proxyUtil = require('./util');
-const path = require('path');
-const fs = require('fs');
-const request = require('request');
+const proxyUtil = require("./util");
+const path = require("path");
+const fs = require("fs");
+const request = require("request");
 
-const cachePath = proxyUtil.getAnyProxyPath('cache');
+const cachePath = proxyUtil.getAnyProxyTmpPath();
 
 /**
  * download a file and cache
@@ -19,9 +19,14 @@ function cacheRemoteFile(url) {
       if (error) {
         return reject(error);
       } else if (response.statusCode !== 200) {
-        return reject(`failed to load with a status code ${response.statusCode}`);
+        return reject(
+          `failed to load with a status code ${response.statusCode}`
+        );
       } else {
-        const fileCreatedTime = proxyUtil.formatDate(new Date(), 'YYYY_MM_DD_hh_mm_ss');
+        const fileCreatedTime = proxyUtil.formatDate(
+          new Date(),
+          "YYYY_MM_DD_hh_mm_ss"
+        );
         const random = Math.ceil(Math.random() * 500);
         const fileName = `remote_rule_${fileCreatedTime}_r${random}.js`;
         const filePath = path.join(cachePath, fileName);
@@ -31,7 +36,6 @@ function cacheRemoteFile(url) {
     });
   });
 }
-
 
 /**
  * load a local npm module
@@ -50,7 +54,6 @@ function loadLocalPath(filePath) {
   });
 }
 
-
 /**
  * load a module from url or local path
  *
@@ -64,7 +67,7 @@ function requireModule(urlOrPath) {
     } else {
       resolve(urlOrPath);
     }
-  }).then(localPath => loadLocalPath(localPath));
+  }).then((localPath) => loadLocalPath(localPath));
 }
 
 module.exports = {

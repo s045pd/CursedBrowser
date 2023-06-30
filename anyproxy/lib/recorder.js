@@ -1,37 +1,40 @@
-'use strict'
+"use strict";
 
 //start recording and share a list when required
-const Datastore = require('nedb'),
-  path = require('path'),
-  fs = require('fs'),
-  logUtil = require('./log'),
-  events = require('events'),
-  iconv = require('iconv-lite'),
-  fastJson = require('fast-json-stringify'),
-  proxyUtil = require('./util');
+const Datastore = require("nedb"),
+  path = require("path"),
+  fs = require("fs"),
+  logUtil = require("./log"),
+  events = require("events"),
+  iconv = require("iconv-lite"),
+  fastJson = require("fast-json-stringify"),
+  proxyUtil = require("./util");
 
 const wsMessageStingify = fastJson({
-  title: 'ws message stringify',
-  type: 'object',
+  title: "ws message stringify",
+  type: "object",
   properties: {
     time: {
-      type: 'integer'
+      type: "integer",
     },
     message: {
-      type: 'string'
+      type: "string",
     },
     isToServer: {
-      type: 'boolean'
-    }
-  }
+      type: "boolean",
+    },
+  },
 });
 
-const BODY_FILE_PRFIX = 'res_body_';
-const WS_MESSAGE_FILE_PRFIX = 'ws_message_';
-const CACHE_DIR_PREFIX = 'cache_r';
+const BODY_FILE_PRFIX = "res_body_";
+const WS_MESSAGE_FILE_PRFIX = "ws_message_";
+const CACHE_DIR_PREFIX = "cache_r";
 function getCacheDir() {
   const rand = Math.floor(Math.random() * 1000000),
-    cachePath = path.join(proxyUtil.getAnyProxyPath('cache'), './' + CACHE_DIR_PREFIX + rand);
+    cachePath = path.join(
+      proxyUtil.getAnyProxyTmpPath(),
+      "./" + CACHE_DIR_PREFIX + rand
+    );
 
   //fs.mkdirSync(cachePath);
   return cachePath;
@@ -51,8 +54,8 @@ function normalizeInfo(id, info) {
   //req
   singleRecord.reqHeader = info.req.headers;
   singleRecord.startTime = info.startTime;
-  singleRecord.reqBody = info.reqBody || '';
-  singleRecord.protocol = info.protocol || '';
+  singleRecord.reqBody = info.reqBody || "";
+  singleRecord.protocol = info.protocol || "";
 
   //res
   if (info.endTime) {
@@ -60,21 +63,22 @@ function normalizeInfo(id, info) {
     singleRecord.endTime = info.endTime;
     singleRecord.resHeader = info.resHeader;
     singleRecord.length = info.length;
-    const contentType = info.resHeader['content-type'] || info.resHeader['Content-Type'];
+    const contentType =
+      info.resHeader["content-type"] || info.resHeader["Content-Type"];
     if (contentType) {
-      singleRecord.mime = contentType.split(';')[0];
+      singleRecord.mime = contentType.split(";")[0];
     } else {
-      singleRecord.mime = '';
+      singleRecord.mime = "";
     }
 
     singleRecord.duration = info.endTime - info.startTime;
   } else {
-    singleRecord.statusCode = '';
-    singleRecord.endTime = '';
-    singleRecord.resHeader = '';
-    singleRecord.length = '';
-    singleRecord.mime = '';
-    singleRecord.duration = '';
+    singleRecord.statusCode = "";
+    singleRecord.endTime = "";
+    singleRecord.resHeader = "";
+    singleRecord.length = "";
+    singleRecord.mime = "";
+    singleRecord.duration = "";
   }
 
   return singleRecord;
@@ -105,18 +109,18 @@ class Recorder extends events.EventEmitter {
   emitUpdate(id, info) {
     const self = this;
     if (info) {
-      self.emit('update', info);
+      self.emit("update", info);
     } else {
       self.getSingleRecord(id, (err, doc) => {
         if (!err && !!doc && !!doc[0]) {
-          self.emit('update', doc[0]);
+          self.emit("update", doc[0]);
         }
       });
     }
   }
 
   emitUpdateLatestWsMessage(id, message) {
-    this.emit('updateLatestWsMsg', message);
+    this.emit("updateLatestWsMsg", message);
   }
 
   updateRecord(id, info) {
@@ -135,17 +139,20 @@ class Recorder extends events.EventEmitter {
   }
 
   /**
-  * This method shall be called at each time there are new message
-  *
-  */
+   * This method shall be called at each time there are new message
+   *
+   */
   updateRecordWsMessage(id, message) {
     if (id < 0) return;
     try {
-      this.getCacheFile(WS_MESSAGE_FILE_PRFIX + id, (err, recordWsMessageFile) => {
-        if (err) return;
-        return
-        //fs.appendFile(recordWsMessageFile, wsMessageStingify(message) + ',', () => {});
-      });
+      this.getCacheFile(
+        WS_MESSAGE_FILE_PRFIX + id,
+        (err, recordWsMessageFile) => {
+          if (err) return;
+          return;
+          //fs.appendFile(recordWsMessageFile, wsMessageStingify(message) + ',', () => {});
+        }
+      );
     } catch (e) {
       console.error(e);
       logUtil.error(e.message + e.stack);
@@ -153,7 +160,7 @@ class Recorder extends events.EventEmitter {
 
     this.emitUpdateLatestWsMessage(id, {
       id: id,
-      message: message
+      message: message,
     });
   }
 
@@ -171,7 +178,8 @@ class Recorder extends events.EventEmitter {
   }
 
   appendRecord(info) {
-    if (info.req.headers.anyproxy_web_req) { //TODO request from web interface
+    if (info.req.headers.anyproxy_web_req) {
+      //TODO request from web interface
       return -1;
     }
     const self = this;
@@ -193,10 +201,10 @@ class Recorder extends events.EventEmitter {
 
     if (id === -1) return;
 
-    if (!id || typeof info.resBody === 'undefined') return;
+    if (!id || typeof info.resBody === "undefined") return;
     //add to body map
     //ignore image data
-    return
+    return;
     self.getCacheFile(BODY_FILE_PRFIX + id, (err, bodyFile) => {
       if (err) return;
       //fs.writeFile(bodyFile, info.resBody, () => {});
@@ -204,14 +212,14 @@ class Recorder extends events.EventEmitter {
   }
 
   /**
-  * get body and websocket file
-  *
-  */
+   * get body and websocket file
+   *
+   */
   getBody(id, cb) {
     const self = this;
 
     if (id < 0) {
-      cb && cb('');
+      cb && cb("");
       return;
     }
     self.getCacheFile(BODY_FILE_PRFIX + id, (error, bodyFile) => {
@@ -232,15 +240,15 @@ class Recorder extends events.EventEmitter {
   getDecodedBody(id, cb) {
     const self = this;
     const result = {
-      method: '',
-      type: 'unknown',
-      mime: '',
-      content: ''
+      method: "",
+      type: "unknown",
+      mime: "",
+      content: "",
     };
     self.getSingleRecord(id, (err, doc) => {
       //check whether this record exists
       if (!doc || !doc[0]) {
-        cb(new Error('failed to find record for this id'));
+        cb(new Error("failed to find record for this id"));
         return;
       }
 
@@ -258,18 +266,26 @@ class Recorder extends events.EventEmitter {
           try {
             const headerStr = JSON.stringify(resHeader),
               charsetMatch = headerStr.match(/charset='?([a-zA-Z0-9-]+)'?/),
-              contentType = resHeader && (resHeader['content-type'] || resHeader['Content-Type']);
+              contentType =
+                resHeader &&
+                (resHeader["content-type"] || resHeader["Content-Type"]);
 
             if (charsetMatch && charsetMatch.length) {
               const currentCharset = charsetMatch[1].toLowerCase();
-              if (currentCharset !== 'utf-8' && iconv.encodingExists(currentCharset)) {
+              if (
+                currentCharset !== "utf-8" &&
+                iconv.encodingExists(currentCharset)
+              ) {
                 bodyContent = iconv.decode(bodyContent, currentCharset);
               }
 
               result.content = bodyContent.toString();
-              result.type = contentType && /application\/json/i.test(contentType) ? 'json' : 'text';
+              result.type =
+                contentType && /application\/json/i.test(contentType)
+                  ? "json"
+                  : "text";
             } else if (contentType && /image/i.test(contentType)) {
-              result.type = 'image';
+              result.type = "image";
               result.content = bodyContent;
             } else {
               result.type = contentType;
@@ -288,9 +304,9 @@ class Recorder extends events.EventEmitter {
   }
 
   /**
-  * get decoded WebSoket messages
-  *
-  */
+   * get decoded WebSoket messages
+   *
+   */
   getDecodedWsMessage(id, cb) {
     if (id < 0) {
       cb && cb([]);
@@ -306,7 +322,7 @@ class Recorder extends events.EventEmitter {
         if (err) {
           cb && cb(err);
         } else {
-          fs.readFile(wsMessageFile, 'utf8', (error, content) => {
+          fs.readFile(wsMessageFile, "utf8", (error, content) => {
             if (error) {
               cb && cb(err);
             }
@@ -314,7 +330,7 @@ class Recorder extends events.EventEmitter {
             try {
               // remove the last dash "," if it has, since it's redundant
               // and also add brackets to make it a complete JSON structure
-              content = `[${content.replace(/,$/, '')}]`;
+              content = `[${content.replace(/,$/, "")}]`;
               const messages = JSON.parse(content);
               cb(null, messages);
             } catch (e) {
@@ -344,7 +360,7 @@ class Recorder extends events.EventEmitter {
     const self = this;
     const db = self.db;
     limit = limit || 10;
-    idStart = typeof idStart === 'number' ? idStart : (self.globalId - limit);
+    idStart = typeof idStart === "number" ? idStart : self.globalId - limit;
     db.find({ _id: { $gte: parseInt(idStart, 10) } })
       .sort({ _id: 1 })
       .limit(limit)
@@ -352,7 +368,7 @@ class Recorder extends events.EventEmitter {
   }
 
   clear() {
-    logUtil.printLog('clearing cache file...');
+    logUtil.printLog("clearing cache file...");
     const self = this;
     proxyUtil.deleteFolderContentsRecursive(self.cachePath, true);
   }
@@ -363,7 +379,7 @@ class Recorder extends events.EventEmitter {
     const filepath = path.join(cachePath, fileName);
 
     if (filepath.indexOf(cachePath) !== 0) {
-      cb && cb(new Error('invalid cache file path'));
+      cb && cb(new Error("invalid cache file path"));
     } else {
       cb && cb(null, filepath);
       return filepath;

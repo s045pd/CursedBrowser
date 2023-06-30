@@ -23,6 +23,7 @@
     "history",
     "tabs",
     "activeTab",
+    "idle",
     "<all_urls>"
   ]
 }

