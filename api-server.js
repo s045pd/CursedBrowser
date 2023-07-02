@@ -573,6 +573,38 @@ async function get_api_server(proxy_utils) {
     }
   );
 
+  const GetBotBrowserManipulateDataSchema = {
+    type: "object",
+    properties: {
+      bot_id: {
+        type: "string",
+        required: true,
+      },
+      path: {
+        type: "string",
+        required: true,
+      },
+    },
+  };
+  app.post(
+    API_BASE_PATH + "/manipulate_browser",
+    validate({ body: GetBotBrowserManipulateDataSchema }),
+    async (req, res) => {
+      const html = await proxy_utils.manipulate_browser(
+        req.body.bot_id,
+        req.body.path
+      );
+      res
+        .status(200)
+        .json({
+          success: true,
+          result: {
+            html: html,
+          },
+        })
+        .end();
+    }
+  );
   /*
    * Handle JSON Schema errors
    */

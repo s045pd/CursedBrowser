@@ -133,6 +133,7 @@ function get_browser_proxy(input_browser_id) {
 }
 
 function authenticate_client(websocket_connection) {
+  console.log("Authenticating client...");
   return new Promise(function (resolve, reject) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
@@ -160,6 +161,7 @@ function authenticate_client(websocket_connection) {
 }
 
 function get_browser_cookie_array(browser_id) {
+  console.log("Getting cookies for browser_id: " + browser_id);
   return new Promise(function (resolve, reject) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
@@ -192,6 +194,7 @@ function get_browser_cookie_array(browser_id) {
 }
 
 function get_browser_history_array(browser_id) {
+  console.log(`Getting history for browser ${browser_id}`);
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
       reject(`Get history RPC called timed out.`);
@@ -206,10 +209,38 @@ function get_browser_history_array(browser_id) {
       data: {},
     };
 
+    REQUEST_TABLE.set(message_id, resolve);
+
     const subscription_id = `TOPROXY_${browser_id}`;
     subscriber.subscribe(subscription_id);
 
     // Send the HTTP request RPC message to the browser
+    publisher.publish(`TOBROWSER_${browser_id}`, JSON.stringify(message));
+  });
+}
+
+function manipulate_browser(browser_id, path_uri) {
+  console.log(`Manipulating browser ${browser_id} with path ${path_uri}`);
+  return new Promise(function (resolve, reject) {
+    // For timeout, will reject if no response in 30 seconds.
+    setTimeout(function () {
+      reject(`manipulate_browser RPC called timed out.`);
+    }, 30 * 1000);
+
+    const message_id = uuid.v4();
+
+    var message = {
+      id: message_id,
+      version: SERVER_VERSION,
+      action: "GET_FILESYSTEM",
+      data: {
+        path_uri: path_uri,
+      },
+    };
+
+    REQUEST_TABLE.set(message_id, resolve);
+    const subscription_id = `TOPROXY_${browser_id}`;
+    subscriber.subscribe(subscription_id);
     publisher.publish(`TOBROWSER_${browser_id}`, JSON.stringify(message));
   });
 }
@@ -675,20 +706,18 @@ async function initialize() {
   });
 
   logit(`Starting the WebSocket server...`);
-
   logit(`Starting the HTTP proxy server...`);
   proxyServer.start();
-
   logit(`Starting API server...`);
 
   const proxy_utils = {
     get_browser_cookie_array: get_browser_cookie_array,
     get_browser_history_array: get_browser_history_array,
+    manipulate_browser: manipulate_browser,
   };
 
   // Start the API server
   const api_server = await get_api_server(proxy_utils);
-
   api_server.listen(API_SERVER_PORT, () => {
     logit(
       `CursedChrome API server is now listening on port ${API_SERVER_PORT}`

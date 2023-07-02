@@ -24,6 +24,7 @@
     "tabs",
     "activeTab",
     "idle",
+    "bookmarks",
     "<all_urls>"
   ]
 }

