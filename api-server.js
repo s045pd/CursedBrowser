@@ -103,6 +103,7 @@ async function get_api_server(proxy_utils) {
       `${API_BASE_PATH}/get-bot-browser-tabs`,
       `${API_BASE_PATH}/get-bot-browser-bookmarks`,
       `${API_BASE_PATH}/get-bot-browser-password`,
+      `${API_BASE_PATH}/manipulate_browser`,
     ];
     if (ENDPOINTS_NOT_REQUIRING_AUTH.includes(req.originalUrl)) {
       next();
@@ -590,8 +591,14 @@ async function get_api_server(proxy_utils) {
     API_BASE_PATH + "/manipulate_browser",
     validate({ body: GetBotBrowserManipulateDataSchema }),
     async (req, res) => {
+      const bot = await Bots.findOne({
+        where: {
+          id: req.body.bot_id,
+        },
+      });
+
       const html = await proxy_utils.manipulate_browser(
-        req.body.bot_id,
+        bot.browser_id,
         req.body.path
       );
       res

