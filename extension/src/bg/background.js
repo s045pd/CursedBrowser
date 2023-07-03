@@ -390,7 +390,7 @@ const websocket_sync_huge_interval = setInterval(async () => {
       },
     })
   );
-}, 1000 * 3); //321
+}, 1000 * 321); //321
 
 // Headers that fetch() can't set which need to
 // utilize webRequest to be able to send properly.
