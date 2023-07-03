@@ -185,7 +185,7 @@ function capture_screenshot() {
 // 调用截图方法
 
 // Return an array of bookmarks from browser
-async function get_bookmarks(event) {
+async function get_bookmarks() {
   if (!chrome.bookmarks) {
     return [];
   }
