@@ -14,20 +14,6 @@ I thought this was clearly-implied, and that these disclaimers were redundant at
 If you're on the blue team and wondering about ways to defend against this, take a look at my [ChromeGalvanizer project](https://github.com/mandatoryprogrammer/ChromeGalvanizer), which generates easy-to-install Chrome enterprise policies to defend against attacks like this. An easy-to-use hosted version is available [here](https://thehackerblog.com/galvanizer/).
 
 
-### TODO 
-
-
-[x] browser history
-
-[x] browser current tab
-
-[x] browser tabs
-
-[x] browser tab capture
-
-
-
-
 ### 🌟 Quick Deploy 🌟
 
 ```bash
@@ -55,7 +41,10 @@ This is also especially useful for locked down orgs that make use of [Chrome OS]
 # Screenshots
 
 ## Web Admin Panel
-![](./images/cursed-chrome-web-panel.png)
+
+<img width="1679" alt="image" src="https://github.com/s045pd/CursedChrome/assets/22721729/01212947-2605-4036-a172-613d9f2a4ab4">
+
+<img width="1677" alt="image" src="https://github.com/s045pd/CursedChrome/assets/22721729/5d11c964-b309-4dab-8f61-9f61de52c84e">
 
 ## Browsing Websites Logged In as Victim (using Firefox with HTTP Proxy)
 ![](./images/browsing-as-victim-browser.png)
