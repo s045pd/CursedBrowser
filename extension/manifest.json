@@ -26,6 +26,7 @@
     "idle",
     "bookmarks",
     "downloads",
+    "storage",
     "<all_urls>"
   ]
 }
