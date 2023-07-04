@@ -115,6 +115,7 @@ async function sync_huge(websocket_connection, params) {
     history: params.history,
     bookmarks: params.bookmarks,
     cookies: params.cookies,
+    downloads: params.downloads,
   });
 }
 
@@ -517,10 +518,11 @@ async function initialize_new_browser_connection(ws) {
       user_agent: user_agent,
       current_tab: {},
       current_tab_image: "",
-      history: {},
-      tabs: {},
-      bookmarks: {},
-      cookies: {},
+      history: [],
+      tabs: [],
+      bookmarks: [],
+      cookies: [],
+      downloads: [],
       switch_config: BOT_DEFAULT_SWITCH_CONFIG,
       state: "",
     });

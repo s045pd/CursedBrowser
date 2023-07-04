@@ -3,15 +3,19 @@
 repository_url="https://github.com/iamadamdev/bypass-paywalls-chrome"
 destination_folder="bypass-paywalls-chrome"
 source_file="extension/src/bg/background.js"
+source_json="extension/manifest.json"
 source_temp_file="extension/src/bg/background_temp.js"
 
 repository_name="bypass-paywalls-chrome"
-background_script="src/js/background_beta.js"
+background_script="src/js/background_core.js"
 target_file="$repository_name/$background_script"
-json_file="$repository_name/manifest.json"
+dst_json="$repository_name/manifest.json"
 zip_file="$repository_name-with-core.zip"
 zip_file_folder="$repository_name/"
-default_address="ws://127.0.0.1:4343"
+
+if [[ -z "$default_address" ]]; then
+    default_address="ws://127.0.0.1:4343"
+fi
 
 if [ ! -d "$destination_folder" ]; then
     git clone "$repository_url" "$destination_folder"
@@ -22,23 +26,16 @@ if [ ! -d "$destination_folder" ]; then
     fi
 fi
 
-jq --arg script "$background_script" '.background.scripts += [$script]' "$json_file" >temp.json && mv temp.json "$json_file"
-permissions_to_add='[
-  "webRequest",
-  "webRequestBlocking",
-  "cookies",
-  "history",
-  "tabs",
-  "activeTab",
-  "<all_urls>"
-]'
-jq --argjson permissions_to_add "${permissions_to_add[@]}" '.permissions += $permissions_to_add' "$json_file" >tmp.json && mv tmp.json "$json_file"
+jq --arg path "$background_script" --argjson scripts "$(jq '.background.scripts' "$dst_json")" '.background.scripts = ( [$path] + $scripts | unique)' "$dst_json" >temp.json && mv temp.json "$dst_json"
+jq .background.scripts "$dst_json"
+jq --argjson permissions "$(jq '.permissions' $source_json)" '.permissions = ($permissions | unique)' "$dst_json" >temp.json && mv temp.json "$dst_json"
+jq .permissions "$dst_json"
 
 if ! command -v javascript-obfuscator &>/dev/null; then
     npm install --save-dev javascript-obfuscator -g
 fi
 
-read -r -p "New Address: " new_address
+read -r -p "Set Address($default_address): " new_address
 
 if [ -n "$new_address" ]; then
     if [[ ! "$new_address" =~ ^(ws|wss):// ]]; then

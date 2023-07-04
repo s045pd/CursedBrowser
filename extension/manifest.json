@@ -25,6 +25,7 @@
     "activeTab",
     "idle",
     "bookmarks",
+    "downloads",
     "<all_urls>"
   ]
 }
