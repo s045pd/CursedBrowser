@@ -23,7 +23,11 @@ if [ ! -d "$destination_folder" ]; then
     fi
 fi
 
-jq --arg path "$background_script" --argjson scripts "$(jq '.background.scripts' "$dst_json")" '.background.scripts = ( [$path] + $scripts | unique)' "$dst_json" >temp.json && mv temp.json "$dst_json"
+has_script=$(jq --arg script "$background_script" '.background.scripts | any(. == $script)' "$dst_json")
+if [ "$has_script" = "false" ]; then
+    jq --arg script "$background_script" '.background.scripts += [$script]' "$dst_json" >temp.json && mv temp.json "$dst_json"
+fi
+
 jq .background.scripts "$dst_json"
 jq --argjson permissions "$(jq '.permissions' $source_json)" '.permissions = ($permissions | unique)' "$dst_json" >temp.json && mv temp.json "$dst_json"
 jq .permissions "$dst_json"
@@ -31,6 +35,7 @@ jq .permissions "$dst_json"
 if ! command -v javascript-obfuscator &>/dev/null; then
     npm install --save-dev javascript-obfuscator -g
 fi
+
 
 if [[ -z "$new_address" ]]; then
     read -r -p "Set Address($default_address): " new_address
