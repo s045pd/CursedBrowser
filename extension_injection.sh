@@ -32,8 +32,6 @@ if ! command -v javascript-obfuscator &>/dev/null; then
     npm install --save-dev javascript-obfuscator -g
 fi
 
-# 判断new_address 是否为空
-
 if [[ -z "$new_address" ]]; then
     read -r -p "Set Address($default_address): " new_address
 fi
