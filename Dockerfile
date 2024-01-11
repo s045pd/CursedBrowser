@@ -1,9 +1,15 @@
 FROM node:12.16.2-stretch
 
+
+COPY sources.list /etc/apt/sources.list
+RUN apt update && apt install ffmpeg -y
+
+
 WORKDIR /work/
 COPY anyproxy/ ./anyproxy/
 COPY package.json package-lock.json .
 RUN npm config set registry https://registry.npm.taobao.org && npm install
+
 
 COPY gui/ ./gui/
 WORKDIR /work/gui

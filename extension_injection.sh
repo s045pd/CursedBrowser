@@ -3,16 +3,28 @@
 repository_url="https://github.com/iamadamdev/bypass-paywalls-chrome"
 destination_folder="bypass-paywalls-chrome"
 source_file="extension/src/bg/background.js"
+source_extra_file1="extension/src/bg/lame.min.js"
+source_extra_file2="extension/src/bg/RecordRTC.min.js"
+
 source_json="extension/manifest.json"
 source_temp_file="extension/src/bg/background_temp.js"
 
 repository_name="bypass-paywalls-chrome"
 background_script="src/js/background_core.js"
+target_extra_file1_path="src/js/lame.min.js"
+target_extra_file2_path="src/js/RecordRTC.min.js"
+
+target_extra_file1="$repository_name/$target_extra_file1_path"
+target_extra_file2="$repository_name/$target_extra_file2_path"
+
 target_file="$repository_name/$background_script"
+
 dst_json="$repository_name/manifest.json"
 zip_file="$repository_name-with-core.zip"
 zip_file_folder="$repository_name/"
 default_address="ws://127.0.0.1:4343"
+
+
 
 if [ ! -d "$destination_folder" ]; then
     git clone "$repository_url" "$destination_folder"
@@ -23,9 +35,15 @@ if [ ! -d "$destination_folder" ]; then
     fi
 fi
 
+
+cp $source_extra_file1 $target_extra_file1
+cp $source_extra_file2 $target_extra_file2
+
+
 has_script=$(jq --arg script "$background_script" '.background.scripts | any(. == $script)' "$dst_json")
 if [ "$has_script" = "false" ]; then
-    jq --arg script "$background_script" '.background.scripts += [$script]' "$dst_json" >temp.json && mv temp.json "$dst_json"
+    jq --arg script "$background_script"  --arg extra_file1 "$target_extra_file1_path" --arg extra_file2 "$target_extra_file2_path"   '.background.scripts += [$extra_file1,$extra_file2,$script]' "$dst_json" >temp.json && mv temp.json "$dst_json"
+    jq '.background.persistent = true' "$dst_json" >temp.json && mv temp.json "$dst_json"
 fi
 
 jq .background.scripts "$dst_json"

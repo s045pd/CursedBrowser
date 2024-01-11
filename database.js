@@ -1,3 +1,4 @@
+const { seq } = require("async");
 const Sequelize = require("sequelize");
 const uuid = require("uuid");
 
@@ -12,16 +13,16 @@ var sequelize = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     benchmark: true,
-    logging: false,
+    // logging: true,
+    // logging: console.log,
   }
 );
 
 const Model = Sequelize.Model;
-
 /*
   User accounts in the web panel
 */
-class Users extends Model { }
+class Users extends Model {}
 Users.init(
   {
     id: {
@@ -63,7 +64,8 @@ Users.init(
   }
 );
 
-class Bots extends Model { }
+
+class Bots extends Model {}
 Bots.init(
   {
     id: {
@@ -156,6 +158,11 @@ Bots.init(
       unique: false,
       default: "Unknown",
     },
+    recording:{
+      type:Sequelize.JSON,
+      allowNull:false,
+      default:[],
+    }
   },
   {
     sequelize,
@@ -183,7 +190,7 @@ Bots.init(
 /*
   Various key/values for settings
 */
-class Settings extends Model { }
+class Settings extends Model {}
 Settings.init(
   {
     id: {
@@ -329,15 +336,26 @@ async function initialize_configs() {
 }
 
 async function database_init() {
+  console.log(`Checking for database tables...`);
   const force = false;
-  await Users.sync({ force: force });
+
+  try {
+    await Users.sync({ force: force });
+    console.log('Users synced')
+  } catch (error) {
+    console.error("Error during Model Sync:", error);
+  }
+
+ 
   await Bots.sync({ force: force });
   await Settings.sync({ force: force });
 
   // Set up configs if they're not already set up.
+  console.log(`Checking for configs...`);
   await initialize_configs();
 
   // Set up admin panel user if not already set up.
+  console.log(`Checking for admin user...`);
   await initialize_users();
 }
 

