@@ -830,7 +830,7 @@ async function api_file_request(method, path, body) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'filename.mp3');
+      link.setAttribute('download', 'record.mp3');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

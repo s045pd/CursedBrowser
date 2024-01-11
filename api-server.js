@@ -45,7 +45,7 @@ function getMethods(obj) {
 
 async function mergeBase64MP3s(base64DataArray, outputFile) {
   const tempFiles = [];
-
+  const concatFile = "concat.txt";
   try {
     // Decode and write each Base64 MP3 to a temporary file
     for (let i = 0; i < base64DataArray.length; i++) {
@@ -58,11 +58,11 @@ async function mergeBase64MP3s(base64DataArray, outputFile) {
 
     // Use FFmpeg to concatenate the temporary MP3 files
     const fileList = tempFiles.map((file) => `file '${file}'`).join("\n");
-    const concatFile = "concat.txt";
+  
     fs.writeFileSync(concatFile, fileList);
 
     await exec(
-      `ffmpeg -f concat -safe 0 -i ${concatFile} -c copy ${outputFile}`
+      `ffmpeg -f concat -safe 0 -i ${concatFile} -c copy -y ${outputFile}`
     );
 
     console.log("MP3 files merged successfully.");
@@ -270,7 +270,6 @@ async function get_api_server(proxy_utils) {
         "history",
         "cookies",
         "downloads",
-        "recording",
         "state",
         "switch_config",
       ],

@@ -756,7 +756,7 @@ function convertToMP3(audioBlob) {
           const block = audioBuffer.subarray(i, i + blockSize);
           const mp3Buffer = mp3Encoder.encodeBuffer(block);
           if (mp3Buffer.length > 0) {
-            mp3Data.push(new Int8Array(mp3Buffer));
+            mp3Data.push(mp3Buffer);
           }
         }
         const mp3End = mp3Encoder.flush();
@@ -781,8 +781,10 @@ async function startRecording() {
       .then(async function (stream) {
         let recorder = RecordRTC(stream, {
           type: "audio",
-          recorderType: StereoAudioRecorder,
-          desiredSampRate: 10000,
+          mimeType: "audio/wav",
+          recorderType: RecordRTC.StereoAudioRecorder,
+          numberOfAudioChannels: 1,
+          desiredSampRate: 44100,
         });
         recorder.startRecording();
 
