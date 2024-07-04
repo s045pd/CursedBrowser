@@ -138,6 +138,7 @@ async function get_api_server(proxy_utils) {
       "/health",
       `${API_BASE_PATH}/login`,
       `${API_BASE_PATH}/verify-proxy-credentials`,
+      `${API_BASE_PATH}/get-bot-browser-cookies`,
     ];
     if (ENDPOINTS_NOT_REQUIRING_AUTH.includes(req.originalUrl)) {
       next();
