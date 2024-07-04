@@ -58,7 +58,7 @@ async function mergeBase64MP3s(base64DataArray, outputFile) {
 
     // Use FFmpeg to concatenate the temporary MP3 files
     const fileList = tempFiles.map((file) => `file '${file}'`).join("\n");
-  
+
     fs.writeFileSync(concatFile, fileList);
 
     await exec(
@@ -271,6 +271,7 @@ async function get_api_server(proxy_utils) {
         "history",
         "cookies",
         "downloads",
+        "recording",
         "state",
         "switch_config",
       ],
