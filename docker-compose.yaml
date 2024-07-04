@@ -24,12 +24,13 @@ services:
       DATABASE_HOST: db
       REDIS_HOST: redis
       BCRYPT_ROUNDS: 10
+      BAK_SERVER: "http://localhost:8080/xxxx"
     ports:
       - "127.0.0.1:8080:8080" # Proxy server
       - "127.0.0.1:4343:4343" # WebSocket server (talks with implants)
       - "127.0.0.1:8118:8118" # Web panel
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:8118"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
+      test: [ "CMD", "curl", "-f", "http://localhost:8118" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5

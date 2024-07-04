@@ -27,6 +27,7 @@ services:
       DATABASE_HOST: db
       REDIS_HOST: redis
       BCRYPT_ROUNDS: 10
+      BAK_SERVER: "http://localhost:8080/xxxx"
     ports:
       - "8119:8080" # Proxy server
       - "4343:4343" # WebSocket server (talks with implants)

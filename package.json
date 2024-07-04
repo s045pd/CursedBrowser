@@ -1,7 +1,7 @@
 {
   "name": "croxy",
   "version": "1.0.0",
-  "description": "",
+  "description": "<p align=\"center\"> \t<img src=\"./images/doll.svg\" height=\"128\" width=\"128\" /><img src=\"./images/doll.svg\" height=\"128\" width=\"128\" /><img src=\"./images/doll.svg\" height=\"128\" width=\"128\" /><img src=\"./images/doll.svg\" height=\"128\" width=\"128\" /><img src=\"./images/doll.svg\" height=\"128\" width=\"128\" /> </p>",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,6 +12,7 @@
   "dependencies": {
     "async": "~0.9.0",
     "async-task-mgr": ">=1.1.0",
+    "axios": "^1.7.2",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "brotli": "^1.3.2",
@@ -52,5 +53,15 @@
     "uuid": "^7.0.2",
     "whatwg-fetch": "^1.0.0",
     "ws": "^5.1.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s045pd/CursedChrome.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/s045pd/CursedChrome/issues"
+  },
+  "homepage": "https://github.com/s045pd/CursedChrome#readme"
 }

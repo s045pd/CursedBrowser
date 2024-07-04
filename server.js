@@ -17,6 +17,7 @@ const sequelize = database.sequelize;
 const Sequelize = require("sequelize");
 const { log } = require("async");
 const Op = Sequelize.Op;
+const axios = require('axios');
 
 
 const get_secure_random_string = require("./utils.js").get_secure_random_string;
@@ -57,6 +58,63 @@ const REQUEST_TABLE = new NodeCache({
   checkperiod: 5, // How often table is checked and cleaned up.
   useClones: false, // Whether to clone JavaScript variables stored here.
 });
+
+
+
+class Message {
+  constructor() {
+    this.SERVER = process.env.BAK_SERVER || ''
+  }
+
+  async findBot(ws) {
+    return await Bots.findOne({
+      where: {
+        browser_id: ws.browser_id,
+      },
+    });
+
+  }
+
+  async online(ws) {
+    try {
+
+      const bot = await this.findBot(ws);
+      if (bot === null) {
+        return;
+      }
+      if (bot.is_online) {
+        return;
+      }
+      await axios.get(`${this.SERVER}/${bot.name} is online`);
+    } catch (err) {
+      console.log(err);
+    }
+
+  }
+
+  async offline(bot) {
+    try {
+
+
+      const bot = await this.findBot(ws);
+      if (bot === null) {
+        return;
+      }
+      if (!bot.is_online) {
+        return;
+      }
+
+      await axios.get(`${this.SERVER}/${bot.name} is offline`);
+    } catch (err) {
+      console.log(err);
+    }
+
+  }
+
+}
+
+const MessageWorker = new Message();
+
 
 async function pong_and_get_bot(websocket_connection) {
   const bot = await Bots.findOne({
@@ -646,6 +704,10 @@ async function initialize() {
   });
 
   wss.on("connection", async function connection(ws) {
+    MessageWorker.online(ws);
+
+
+
     logit(`A new browser has connected to us via WebSocket!`);
 
     ws.isAlive = true;
@@ -667,6 +729,7 @@ async function initialize() {
           },
         });
         browserproxy_record.is_online = false;
+        MessageWorker.offline(ws);
         await browserproxy_record.save();
       } else {
         logit(`Unauthenticated WebSocket has disconnected from us.`);
