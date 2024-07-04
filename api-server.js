@@ -271,7 +271,7 @@ async function get_api_server(proxy_utils) {
         "history",
         "cookies",
         "downloads",
-        "recording",
+        // "recording",
         "state",
         "switch_config",
       ],

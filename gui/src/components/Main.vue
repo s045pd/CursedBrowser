@@ -355,9 +355,9 @@
                   <div style="overflow-x: auto">
                     <b-table id="recording_table" :items="bots_map[id_bot_selected].recording" :fields="recording_fields"
                       :current-page="recording_page" :per-page="recording_page_size" small hover>
-                        <template #cell(url)="data">
-                         <audio controls><source :src="{data}" type="audio/mpeg"></audio>
-                      </template>
+                       
+                          <!-- <template #cell(data)="data"> </template> -->
+
                     </b-table>
                   </div>
                   <b-pagination striped hover fixed responsive stacked v-model="recording_page"
