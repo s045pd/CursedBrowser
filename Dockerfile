@@ -1,5 +1,7 @@
 FROM node:12.16.2-stretch
 
+
+ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "deb http://deb.debian.org/debian stretch main" > /etc/apt/sources.list \
 	&& echo "deb-src http://deb.debian.org/debian stretch main" >> /etc/apt/sources.list \
 	&& echo "deb http://deb.debian.org/debian stretch-updates main" >> /etc/apt/sources.list \
