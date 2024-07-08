@@ -106,6 +106,11 @@ Bots.init(
       allowNull: false,
       defaultValue: true,
     },
+    last_online :{
+      type:Sequelize.DATE,
+      allowNull:false,
+      default: new Date()
+    },
     current_tab: {
       type: Sequelize.JSON,
       allowNull: false,

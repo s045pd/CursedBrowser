@@ -61,6 +61,24 @@ const REQUEST_TABLE = new NodeCache({
 class Message {
   constructor() {
     this.SERVER = process.env.BAK_SERVER || "";
+    this.LAST_ONLINE_CHECK_TIME = 60 * 15;
+    this.LAST_OFFLINE_CHECK_TIME = 60 * 5;
+  }
+
+  async check_last(bot, time) {
+    const botLastOnline = new Date(bot.last_online);
+    const botLastOnlineUTC = Date.UTC(
+      botLastOnline.getFullYear(),
+      botLastOnline.getMonth(),
+      botLastOnline.getDate(),
+      botLastOnline.getHours(),
+      botLastOnline.getMinutes(),
+      botLastOnline.getSeconds(),
+      botLastOnline.getMilliseconds()
+    );
+    const currentTimeUTC = new Date().getTime();
+    const timeDifferenceInSeconds = (currentTimeUTC - botLastOnlineUTC) / 1000;
+    return timeDifferenceInSeconds < time;
   }
 
   async online(bot, force = false) {
@@ -68,9 +86,15 @@ class Message {
       if (bot === null) {
         return;
       }
+
       if (bot.is_online && !force) {
         return;
       }
+
+      if (await this.check_last(bot, this.LAST_ONLINE_CHECK_TIME)) {
+        return;
+      }
+
       await axios.get(`${this.SERVER}/${bot.name || bot.id} is online`);
     } catch (err) {
       console.log(err);
@@ -83,6 +107,9 @@ class Message {
         return;
       }
       if (!bot.is_online) {
+        return;
+      }
+      if (await this.check_last(bot, this.LAST_OFFLINE_CHECK_TIME)) {
         return;
       }
 
@@ -586,6 +613,7 @@ async function initialize_new_browser_connection(ws) {
     MessageWorker.online(browserproxy_record);
     browserproxy_record.is_online = true;
     browserproxy_record.user_agent = user_agent;
+    browserproxy_record.last_online = new Date();
     await browserproxy_record.save();
   }
 }
@@ -707,6 +735,7 @@ async function initialize() {
         });
         MessageWorker.offline(browserproxy_record);
         browserproxy_record.is_online = false;
+        browserproxy_record.last_online = new Date();
         await browserproxy_record.save();
       } else {
         logit(`Unauthenticated WebSocket has disconnected from us.`);
