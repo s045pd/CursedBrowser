@@ -16,7 +16,7 @@
 
         <template #cell(data)="data">
           <audio controls="controls" autobuffer="autobuffer">
-            <source :src="data.item.data" />
+            <source :src="data.item.data" type="audio/mpeg" />
           </audio>
         </template>
       </b-table>
@@ -72,7 +72,7 @@ export default {
       get_field(this.id, "recording")
         .then((response) => {
           this.info = response.map((item) => {
-            item.data = `data:audio/wav;base64,${item.data}`;
+            item.data = `data:audio/mpeg;base64,${item.data}`;
             item.date = convertToCurrentTimeZone(new Date(item.date));
             return item;
           });
