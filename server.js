@@ -87,7 +87,7 @@ class Message {
       if (bot === null) {
         return;
       }
-      if (!bot?.switch_config?.NOTIFICATION) {
+      if (!bot.switch_config.NOTIFICATION) {
         return;
       }
 
@@ -110,7 +110,7 @@ class Message {
       if (bot === null) {
         return;
       }
-      if (!bot?.switch_config?.NOTIFICATION) {
+      if (!bot.switch_config.NOTIFICATION) {
         return;
       }
       if (!bot.is_online) {
