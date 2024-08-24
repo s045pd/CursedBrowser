@@ -5,24 +5,24 @@
 </template>
 
 <script>
-import Main from './components/Main.vue'
+import Main from "@/views/Main.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Main
-  }
-}
+    Main,
+  },
+};
 </script>
 
 <style>
 html,
 body {
-    height: 100%;
+  height: 100%;
 }
 
 body {
-    /*background-color: #f5f5f5 !important;s*/
-	background-image: url("../public/img/background.png");
+  /*background-color: #f5f5f5 !important;s*/
+  background-image: url("../public/img/background.png");
 }
 </style>

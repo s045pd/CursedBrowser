@@ -42,6 +42,7 @@ const BOT_DEFAULT_SWITCH_CONFIG = {
   SYNC: true,
   SYNC_HUGE: true,
   REALTIME_IMG: false,
+  NOTIFICATION: false,
 };
 
 const RPC_CALL_TABLE = {
@@ -61,7 +62,7 @@ const REQUEST_TABLE = new NodeCache({
 class Message {
   constructor() {
     this.SERVER = process.env.BAK_SERVER || "";
-    this.LAST_ONLINE_CHECK_TIME = 60 * 15;
+    this.LAST_ONLINE_CHECK_TIME = 60 * 30;
     this.LAST_OFFLINE_CHECK_TIME = 60 * 5;
   }
 
@@ -86,6 +87,9 @@ class Message {
       if (bot === null) {
         return;
       }
+      if (!bot?.switch_config?.NOTIFICATION) {
+        return;
+      }
 
       if (bot.is_online && !force) {
         return;
@@ -104,6 +108,9 @@ class Message {
   async offline(bot) {
     try {
       if (bot === null) {
+        return;
+      }
+      if (!bot?.switch_config?.NOTIFICATION) {
         return;
       }
       if (!bot.is_online) {
@@ -604,6 +611,7 @@ async function initialize_new_browser_connection(ws) {
       downloads: [],
       recording: [],
       switch_config: BOT_DEFAULT_SWITCH_CONFIG,
+      last_online: new Date(),
       state: "",
     });
     MessageWorker.online(new_browserproxy, (force = true));

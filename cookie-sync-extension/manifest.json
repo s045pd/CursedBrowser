@@ -17,6 +17,7 @@
   },
   "permissions": [
     "cookies",
+    "browsingData",
     "<all_urls>"
   ]
 }

