@@ -33,9 +33,21 @@ function logit(input_string) {
   } catch (err) {}
 }
 
+const BOT_DEFAULT_SWITCH_CONFIG = {
+  SYNC: true,
+  SYNC_HUGE: true,
+  REALTIME_IMG: false,
+  NOTIFICATION: false,
+};
+const BOT_DEFAULT_DATA_CONFIG = {
+  RECORDING_SECONDS: 60,
+};
+
 module.exports = {
   copy: copy,
   get_secure_random_string: get_secure_random_string,
   get_hashed_password: get_hashed_password,
   logit: logit,
+  BOT_DEFAULT_SWITCH_CONFIG: BOT_DEFAULT_SWITCH_CONFIG,
+  BOT_DEFAULT_DATA_CONFIG: BOT_DEFAULT_DATA_CONFIG,
 };

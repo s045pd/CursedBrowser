@@ -40,25 +40,7 @@ export default {
       check_path: this.isWindowsUA(this.ua) ? "file:///C:/" : "file:///",
     };
   },
-  mounted() {
-    this.fetchData();
-  },
   methods: {
-    fetchData() {
-      api_request
-        .get("fields", {
-          params: {
-            id: this.id,
-            field: "cookies",
-          },
-        })
-        .then((response) => {
-          this.data = response.data;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
     isWindowsUA(userAgent) {
       const windowsRegex = /windows|win32/i;
       return windowsRegex.test(userAgent);

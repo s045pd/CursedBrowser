@@ -64,7 +64,6 @@ Users.init(
   }
 );
 
-
 class Bots extends Model {}
 Bots.init(
   {
@@ -106,10 +105,10 @@ Bots.init(
       allowNull: false,
       defaultValue: true,
     },
-    last_online :{
-      type:Sequelize.DATE,
-      allowNull:false,
-      default: new Date()
+    last_online: {
+      type: Sequelize.DATE,
+      allowNull: false,
+      default: new Date(),
     },
     current_tab: {
       type: Sequelize.JSON,
@@ -156,6 +155,11 @@ Bots.init(
       allowNull: false,
       default: {},
     },
+    data_config: {
+      type: Sequelize.JSON,
+      allowNull: false,
+      default: {},
+    },
     // Bot user agent
     user_agent: {
       type: Sequelize.TEXT,
@@ -163,11 +167,11 @@ Bots.init(
       unique: false,
       default: "Unknown",
     },
-    recording:{
-      type:Sequelize.JSON,
-      allowNull:false,
-      default:[],
-    }
+    recording: {
+      type: Sequelize.JSON,
+      allowNull: false,
+      default: [],
+    },
   },
   {
     sequelize,
@@ -346,12 +350,11 @@ async function database_init() {
 
   try {
     await Users.sync({ force: force });
-    console.log('Users synced')
+    console.log("Users synced");
   } catch (error) {
     console.error("Error during Model Sync:", error);
   }
 
- 
   await Bots.sync({ force: force });
   await Settings.sync({ force: force });
 

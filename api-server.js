@@ -17,14 +17,9 @@ const exec = promisify(require("child_process").exec);
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const get_hashed_password = require("./utils.js").get_hashed_password;
-
-const BOT_DEFAULT_SWITCH_CONFIG = {
-  SYNC: true,
-  SYNC_HUGE: true,
-  REALTIME_IMG: false,
-  NOTIFICATION: false,
-};
-
+const BOT_DEFAULT_SWITCH_CONFIG =
+  require("./utils.js").BOT_DEFAULT_SWITCH_CONFIG;
+const BOT_DEFAULT_DATA_CONFIG = require("./utils.js").BOT_DEFAULT_DATA_CONFIG;
 /*
     API Server
 
@@ -226,6 +221,10 @@ async function get_api_server(proxy_utils) {
           ...BOT_DEFAULT_SWITCH_CONFIG,
           ...req.body.switch_config,
         },
+        data_config: {
+          ...BOT_DEFAULT_DATA_CONFIG,
+          ...req.body.data_config,
+        },
       });
 
       res
@@ -304,6 +303,7 @@ async function get_api_server(proxy_utils) {
   // "downloads",
   // "recording",
   // "switch_config",
+  // "data_config"
   app.get(API_BASE_PATH + "/fields", async (req, res) => {
     const name = req.query.field;
 

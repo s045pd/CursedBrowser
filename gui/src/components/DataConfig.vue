@@ -13,6 +13,14 @@
       >
     </b-input-group>
 
+    <b-input-group prepend="Bot Per-Recording Seconds" class="mt-3">
+      <b-form-input
+        type="number"
+        v-model="data_config.RECORDING_SECONDS"
+        autofocus
+      ></b-form-input>
+    </b-input-group>
+
     <b-button variant="primary" v-on:click="update_bot_config">
       <font-awesome-icon :icon="['fas', 'edit']" class="icon alt mr-1 ml-1" />
       Update
@@ -41,6 +49,9 @@ export default {
   data() {
     return {
       switch_config: {},
+      data_config: {
+        RECORDING_SECONDS: 0,
+      },
     };
   },
   mounted() {
@@ -48,13 +59,13 @@ export default {
   },
   methods: {
     fetchData() {
-      get_field(this.id, "switch_config")
-        .then((response) => {
-          this.switch_config = response;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      get_field(this.id, "switch_config").then((response) => {
+        this.switch_config = response;
+      });
+
+      get_field(this.id, "data_config").then((response) => {
+        this.data_config = response;
+      });
     },
     async update_bot_config() {
       await api_request(
@@ -65,6 +76,10 @@ export default {
           bot_id: this.id,
           name: this.name,
           switch_config: this.switch_config,
+          data_config: {
+            ...this.data_config,
+            RECORDING_SECONDS: parseInt(this.data_config.RECORDING_SECONDS),
+          },
         }
       );
       this.$toastr.s("Bot renamed successfully.");

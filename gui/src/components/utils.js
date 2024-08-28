@@ -50,14 +50,13 @@ export const api_request = async (method, path, params, body) => {
     },
     redirect: "follow",
   };
-  if (params) {
+  if (params && Object.keys(params).length > 0) {
     path += "?";
     path += Object.keys(params)
       .map((key) => `${key}=${params[key]}`)
       .join("&");
   }
-
-  if (body) {
+  if (body && Object.keys(body).length > 0) {
     request_options.body = JSON.stringify(body);
   }
 

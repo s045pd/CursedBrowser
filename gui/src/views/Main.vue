@@ -444,9 +444,14 @@ export default {
   },
   methods: {
     async update_user_password() {
-      await api_request("PUT", "/password", {
-        new_password: this.update_password.new_password,
-      });
+      await api_request(
+        "PUT",
+        "/password",
+        {},
+        {
+          new_password: this.update_password.new_password,
+        }
+      );
       this.user.password_should_be_changed = false;
       this.$nextTick(() => {
         this.$bvModal.hide("update_password_modal");
@@ -459,7 +464,7 @@ export default {
     },
     async update_auth_status() {
       try {
-        var auth_result = await api_request("GET", "/me", false);
+        var auth_result = await api_request("GET", "/me");
       } catch (e) {
         return;
       }
@@ -471,10 +476,15 @@ export default {
     },
     async log_in() {
       try {
-        var login_result = await api_request("POST", "/login", {
-          username: this.user.login.username,
-          password: this.user.login.password,
-        });
+        var login_result = await api_request(
+          "POST",
+          "/login",
+          {},
+          {
+            username: this.user.login.username,
+            password: this.user.login.password,
+          }
+        );
       } catch (e) {
         console.error(`Invalid login.`);
         console.error(e);
@@ -490,7 +500,7 @@ export default {
         login_result.password_should_be_changed;
     },
     async logout() {
-      await api_request("GET", "/logout", false);
+      await api_request("GET", "/logout");
       this.user.is_authenticated = false;
       this.user.password_should_be_changed = null;
     },
@@ -553,7 +563,7 @@ export default {
       this.id_bot_selected = null;
     },
     async refresh_bots() {
-      const response = await api_request("GET", "/bots", false);
+      const response = await api_request("GET", "/bots");
       response.bots.map((bot) => {
         this.bots_map[bot.id] = bot;
       });
