@@ -24,12 +24,15 @@ async function get_hashed_password(password) {
   return bcrypt.hash(password, bcrypt_rounds);
 }
 
-function logit(input_string) {
+function logit(input_string, is_server_side = true) {
   const datetime = moment().format("MMMM Do YYYY, h:mm:ss a");
   // Add spacer unless it starts with a `[`
   try {
     const spacer = input_string.startsWith("[") ? "" : " ";
-    console.log(`[${datetime}]${spacer}${input_string.trim()}`);
+    const message = `[${datetime}]${spacer}${input_string.trim()}`;
+    const reset = "\x1b[0m";
+    const head = is_server_side ? "\x1b[32m" : "\x1b[34m";
+    console.log(`${head}${message}${reset}`);
   } catch (err) {}
 }
 

@@ -13,7 +13,7 @@ var sequelize = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     benchmark: true,
-    // logging: true,
+    logging: false,
     // logging: console.log,
   }
 );

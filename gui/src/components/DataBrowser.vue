@@ -37,8 +37,24 @@ export default {
     return {
       data: [],
       manipulate_browser_loading: false,
+      check_path_prefix: this.isWindowsUA(this.ua) ? "file://" : "file://",
       check_path: this.isWindowsUA(this.ua) ? "file:///C:/" : "file:///",
     };
+  },
+  mounted() {
+    window.addEventListener(
+      "message",
+      (e) => {
+        const key = e.message ? "message" : "data";
+        const data = e[key];
+        if (typeof data === "string" && data.startsWith("TOPATH_")) {
+          const path = data.replace("TOPATH_", "");
+          this.check_path = this.check_path_prefix + path;
+          this.manipulate();
+        }
+      },
+      false
+    );
   },
   methods: {
     isWindowsUA(userAgent) {
@@ -63,7 +79,7 @@ export default {
             iframe.contentDocument || iframe.contentWindow.document;
 
           iframeDocument.open();
-          iframeDocument.write(response.html);
+          iframeDocument.write(this.modify_html(response.html));
           iframeDocument.close();
         })
         .catch((e) => {
@@ -72,6 +88,13 @@ export default {
         .finally(() => {
           this.manipulate_browser_loading = false;
         });
+    },
+    modify_html(html) {
+      // 修改html数据，将其中的a标签的href属性替换为javascript:void(0)，并将其onclick属性设定为将href回传给父级组件
+      return html.replace(
+        /<a class="icon dir" href="([^"]*)"/g,
+        '<a class="icon dir" href="javascript:void(0)" onclick="parent.postMessage( `TOPATH_$1`, \'*\')"'
+      ).replace();
     },
   },
 };

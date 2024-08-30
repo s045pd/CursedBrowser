@@ -6,7 +6,7 @@
     "configurations": [
         {
             "command": "nvm use 12.16.2 && node server.js",
-            "name": "serer",
+            "name": "server",
             "request": "launch",
             "type": "node-terminal"
         },

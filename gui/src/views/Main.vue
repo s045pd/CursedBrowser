@@ -278,18 +278,23 @@
                       style="vertical-align: middle"
                       v-if="!bot.is_online"
                     >
-                      <span class="offline-symbol">
-                        <font-awesome-icon
-                          :icon="['fas', 'times-circle']"
-                          class="icon alt mr-1 ml-1"
-                        />
-                      </span>
-                      <span>{{
-                        convertToCurrentTimeZone(bot.last_online)
-                      }}</span>
+                      <div>
+                        <span class="offline-symbol">
+                          <font-awesome-icon
+                            :icon="['fas', 'times-circle']"
+                            class="icon alt mr-1 ml-1"
+                          />
+                        </span>
+                      </div>
+                      <b-badge
+                        :title="convertToCurrentTimeZone(bot.last_online)"
+                        >{{
+                          timeAgo(convertToCurrentTimeZone(bot.last_online))
+                        }}</b-badge
+                      >
                     </td>
                     <td>{{ bot.tabs }} / {{ bot.history }}</td>
-                    <td>
+                    <td >
                       <b-link :href="bot.current_tab.url" target="”_blank”"
                         >{{ bot.current_tab.title }}
                       </b-link>
@@ -518,7 +523,25 @@ export default {
       this.setRefreshTime();
     },
     convertToCurrentTimeZone(date) {
-      convertToCurrentTimeZone(date);
+      return convertToCurrentTimeZone(date);
+    },
+    // 检查当前时间距离现在过去的时间
+    timeAgo(date) {
+      const now = new Date();
+      const diff = now - new Date(date);
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      if (days > 0) {
+        return `${days} days ago`;
+      } else if (hours > 0) {
+        return `${hours} hours ago`;
+      } else if (minutes > 0) {
+        return `${minutes} minutes ago`;
+      } else {
+        return `${seconds} seconds ago`;
+      }
     },
 
     async delete_bot(bot_id) {

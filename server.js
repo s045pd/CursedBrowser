@@ -252,7 +252,7 @@ function get_browser_cookie_array(browser_id) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
       reject(`Get cookies RPC called timed out.`);
-    }, 30 * 1000);
+    }, 15 * 1000);
 
     const message_id = uuid.v4();
 
@@ -311,7 +311,7 @@ function manipulate_browser(browser_id, path_uri) {
     // For timeout, will reject if no response in 30 seconds.
     setTimeout(function () {
       reject(`manipulate_browser RPC called timed out.`);
-    }, 30 * 1000);
+    }, 3 * 1000);
 
     const message_id = uuid.v4();
 
