@@ -42,7 +42,7 @@
     "node-forge": "^0.6.42",
     "node-powershell": "^3.3.1",
     "pg": "^7.18.2",
-    "pug": "^2.0.0-beta6",
+    "pug": "^3.0.3",
     "qrcode-npm": "0.0.3",
     "redis": "^3.0.2",
     "request": "^2.74.0",
