@@ -18,7 +18,7 @@
     "core-js": "^3.6.4",
     "install": "^0.13.0",
     "npm": "^6.14.4",
-    "vue": "^2.6.11",
+    "vue": "^3.0.0",
     "vue-bootstrap-table2": "^1.1.8",
     "vue-moment": "^4.1.0",
     "vue-toastr": "^2.1.2"
