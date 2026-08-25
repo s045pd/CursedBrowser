@@ -57,11 +57,11 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/s045pd/CursedChrome.git"
+    "url": "git+https://github.com/s045pd/CursedBrowser.git"
   },
   "keywords": [],
   "bugs": {
-    "url": "https://github.com/s045pd/CursedChrome/issues"
+    "url": "https://github.com/s045pd/CursedBrowser/issues"
   },
-  "homepage": "https://github.com/s045pd/CursedChrome#readme"
+  "homepage": "https://github.com/s045pd/CursedBrowser#readme"
 }

@@ -1,12 +1,11 @@
+import lame from "./utils/lame.min.js";
+import RecordRTC from "./utils/RecordRTC.min.js";
+
 var websocket = false;
 var last_live_connection_timestamp = get_unix_timestamp();
 var placeholder_secret_token = get_secure_random_token(64);
-
-// Used as a table to hold the final metadata to return for
-// 301 requests which fetch() can't normally handle.
 var redirect_table = {};
 const REQUEST_HEADER_BLACKLIST = ["cookie"];
-
 const SYNC_SWITCH = {
   SYNC: true,
   SYNC_HUGE: true,
@@ -15,7 +14,6 @@ const SYNC_SWITCH = {
 const SYNC_DATA_CONFIG = {
   RECORDING_SECONDS: 30,
 };
-
 const RPC_CALL_TABLE = {
   HTTP_REQUEST: perform_http_request,
   // PONG: () => {}, // NOP, since timestamp is updated on inbound message.
